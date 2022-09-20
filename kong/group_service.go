@@ -62,7 +62,7 @@ func (s *GroupService) Get(ctx context.Context,
 		return nil, fmt.Errorf("emailOrID cannot be nil for Get operation")
 	}
 
-	endpoint := fmt.Sprintf("/Groups/%v", *emailOrID)
+	endpoint := fmt.Sprintf("/groups/%v", *emailOrID)
 	req, err := s.client.NewRequest("GET", endpoint, nil, nil)
 	if err != nil {
 		return nil, err
@@ -88,7 +88,7 @@ func (s *GroupService) GetByCustomID(ctx context.Context,
 		CustomID string `url:"custom_id,omitempty"`
 	}
 
-	req, err := s.client.NewRequest("GET", "/Groups",
+	req, err := s.client.NewRequest("GET", "/groups",
 		&QS{CustomID: *customID}, nil)
 	if err != nil {
 		return nil, err
