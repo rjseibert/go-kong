@@ -52,6 +52,7 @@ type Client struct {
 	UpstreamNodeHealth      AbstractUpstreamNodeHealthService
 	Targets                 AbstractTargetService
 	Workspaces              AbstractWorkspaceService
+	Groups                  AbstractGroupService
 	Admins                  AbstractAdminService
 	RBACUsers               AbstractRBACUserService
 	RBACRoles               AbstractRBACRoleService
