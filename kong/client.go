@@ -139,6 +139,7 @@ func NewClient(baseURL *string, client *http.Client) (*Client, error) {
 	kong.UpstreamNodeHealth = (*UpstreamNodeHealthService)(&kong.common)
 	kong.Targets = (*TargetService)(&kong.common)
 	kong.Workspaces = (*WorkspaceService)(&kong.common)
+	kong.Groups = (*GroupService)(&kong.common)
 	kong.Admins = (*AdminService)(&kong.common)
 	kong.RBACUsers = (*RBACUserService)(&kong.common)
 	kong.RBACRoles = (*RBACRoleService)(&kong.common)
