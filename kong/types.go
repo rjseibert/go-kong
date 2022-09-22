@@ -299,8 +299,10 @@ type Workspace struct {
 // Group represents a Group in Kong.
 // +k8s:deepcopy-gen=true
 type Group struct {
-	Name    *string `json:"name,omitempty" yaml:"name,omitempty"`
-	Comment *string `json:"comment,omitempty" yaml:"comment,omitempty"`
+	CreatedAt *int    `json:"created_at,omitempty" yaml:"created_at,omitempty"`
+	ID        *string `json:"id,omitempty" yaml:"id,omitempty"`
+	Name      *string `json:"name,omitempty" yaml:"name,omitempty"`
+	Comment   *string `json:"comment,omitempty" yaml:"comment,omitempty"`
 }
 
 // Admin represents an Admin in Kong.
