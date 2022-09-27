@@ -117,10 +117,7 @@ func TestUserRoles(T *testing.T) {
 			ID: createdRoleA.ID,
 		},
 		Endpoint: String("/rbac"),
-		Actions: []*string{
-			String("create"),
-			String("read"),
-		},
+		Actions:  String("create,read"),
 	}
 
 	createdEndpointPermission, err := client.RBACEndpointPermissions.Create(defaultCtx, ep)
