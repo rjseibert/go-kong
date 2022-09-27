@@ -360,7 +360,7 @@ type RBACEndpointPermission struct {
 	CreatedAt *int      `json:"created_at,omitempty" yaml:"created_at,omitempty"`
 	Workspace *string   `json:"workspace,omitempty" yaml:"workspace,omitempty"`
 	Endpoint  *string   `json:"endpoint,omitempty" yaml:"endpoint,omitempty"`
-	Actions   []*string `json:"Actions,omitempty" yaml:"Actions,omitempty"`
+	Actions   *string   `json:"actions,omitempty" yaml:"actions,omitempty"`
 	Negative  *bool     `json:"negative,omitempty" yaml:"negative,omitempty"`
 	Role      *RBACRole `json:"role,omitempty" yaml:"role,omitempty"`
 	Comment   *string   `json:"comment,omitempty" yaml:"comment,omitempty"`
@@ -372,7 +372,7 @@ func (e *RBACEndpointPermission) MarshalJSON() ([]byte, error) {
 		CreatedAt *int      `json:"created_at,omitempty" yaml:"created_at,omitempty"`
 		Workspace *string   `json:"workspace,omitempty" yaml:"workspace,omitempty"`
 		Endpoint  *string   `json:"endpoint,omitempty" yaml:"endpoint,omitempty"`
-		Actions   []*string `json:"Actions,omitempty" yaml:"Actions,omitempty"`
+		Actions   *string   `json:"actions,omitempty" yaml:"actions,omitempty"`
 		Negative  *bool     `json:"negative,omitempty" yaml:"negative,omitempty"`
 		Role      *RBACRole `json:"role,omitempty" yaml:"role,omitempty"`
 		Comment   *string   `json:"comment,omitempty" yaml:"comment,omitempty"`
