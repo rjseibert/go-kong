@@ -388,6 +388,38 @@ func (e *RBACEndpointPermission) MarshalJSON() ([]byte, error) {
 	})
 }
 
+type RBACEndpointPermissionResponse struct {
+	CreatedAt *int      `json:"created_at,omitempty" yaml:"created_at,omitempty"`
+	Workspace *string   `json:"workspace,omitempty" yaml:"workspace,omitempty"`
+	Endpoint  *string   `json:"endpoint,omitempty" yaml:"endpoint,omitempty"`
+	Actions   []*string `json:"actions,omitempty" yaml:"actions,omitempty"`
+	Negative  *bool     `json:"negative,omitempty" yaml:"negative,omitempty"`
+	Role      *RBACRole `json:"role,omitempty" yaml:"role,omitempty"`
+	Comment   *string   `json:"comment,omitempty" yaml:"comment,omitempty"`
+}
+
+// MarshalJSON marshals an endpoint permission into a suitable form for the Kong admin API
+func (e *RBACEndpointPermissionResponse) MarshalJSON() ([]byte, error) {
+	type ep struct {
+		CreatedAt *int      `json:"created_at,omitempty" yaml:"created_at,omitempty"`
+		Workspace *string   `json:"workspace,omitempty" yaml:"workspace,omitempty"`
+		Endpoint  *string   `json:"endpoint,omitempty" yaml:"endpoint,omitempty"`
+		Actions   []*string `json:"actions,omitempty" yaml:"actions,omitempty"`
+		Negative  *bool     `json:"negative,omitempty" yaml:"negative,omitempty"`
+		Role      *RBACRole `json:"role,omitempty" yaml:"role,omitempty"`
+		Comment   *string   `json:"comment,omitempty" yaml:"comment,omitempty"`
+	}
+
+	return json.Marshal(&ep{
+		CreatedAt: e.CreatedAt,
+		Workspace: e.Workspace,
+		Endpoint:  e.Endpoint,
+		Actions:   e.Actions,
+		Negative:  e.Negative,
+		Comment:   e.Comment,
+	})
+}
+
 // RBACEntityPermission represents an RBAC Entity Permission in Kong Enterprise
 // +k8s:deepcopy-gen=true
 // Note: this type implements a custom JSON marshaler. Review the associated MarshalJSON()
