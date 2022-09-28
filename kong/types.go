@@ -305,6 +305,13 @@ type Group struct {
 	Comment   *string `json:"comment,omitempty" yaml:"comment,omitempty"`
 }
 
+// RBACRoleToGroupRequest represents a request to
+// +k8s:deepcopy-gen=true
+type RBACRoleToGroupRequest struct {
+	WorkspaceID *string `json:"workspace_id" yaml:"workspace_id"`
+	RBACRoleID  *string `json:"rbac_role_id" yaml:"rbac_role_id"`
+}
+
 // Admin represents an Admin in Kong.
 // +k8s:deepcopy-gen=true
 type Admin struct {
