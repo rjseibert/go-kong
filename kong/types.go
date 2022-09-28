@@ -296,6 +296,14 @@ type Workspace struct {
 	Meta      map[string]interface{} `json:"meta,omitempty" yaml:"meta,omitempty"`
 }
 
+type FileResource struct {
+	CreatedAt *int    `json:"created_at,omitempty" yaml:"created_at,omitempty"`
+	ID        *string `json:"id,omitempty" yaml:"id,omitempty"`
+	Content   *string `json:"content,omitempty" yaml:"content,omitempty"`
+	Path   	  *string `json:"path,omitempty" yaml:"path,omitempty"`
+	Checksum  *string `json:"checksum,omitempty" yaml:"checksum,omitempty"`
+}
+
 // Group represents a Group in Kong.
 // +k8s:deepcopy-gen=true
 type Group struct {
