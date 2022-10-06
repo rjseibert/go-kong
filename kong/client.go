@@ -94,6 +94,7 @@ type Status struct {
 		ConnectionsWriting  int `json:"connections_writing"`
 		TotalRequests       int `json:"total_requests"`
 	} `json:"server"`
+	ConfigurationHash string `json:"configuration_hash,omitempty" yaml:"configuration_hash,omitempty"`
 }
 
 // NewClient returns a Client which talks to Admin API of Kong
@@ -227,7 +228,8 @@ func (c *Client) DoRAW(ctx context.Context, req *http.Request) (*http.Response, 
 
 // Do executes an HTTP request and returns a kong.Response
 func (c *Client) Do(ctx context.Context, req *http.Request,
-	v interface{}) (*Response, error) {
+	v interface{},
+) (*Response, error) {
 	resp, err := c.DoRAW(ctx, req)
 	if err != nil {
 		return nil, err

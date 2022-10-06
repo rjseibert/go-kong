@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestIsNotFoundErr(T *testing.T) {
@@ -22,7 +23,7 @@ func TestIsNotFoundErrE2E(T *testing.T) {
 	assert := assert.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(client)
 
 	consumer, err := client.Consumers.Get(defaultCtx, String("does-not-exists"))
@@ -33,9 +34,10 @@ func TestIsNotFoundErrE2E(T *testing.T) {
 
 func TestAPIError_Code(T *testing.T) {
 	assert := assert.New(T)
+	require := require.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(client)
 
 	consumer, err := client.Consumers.Get(defaultCtx, String("does-not-exists"))
@@ -44,6 +46,6 @@ func TestAPIError_Code(T *testing.T) {
 
 	var kongErr *APIError
 	ok := errors.As(err, &kongErr)
-	assert.True(ok)
+	require.True(ok)
 	assert.True(kongErr.Code() == 404)
 }

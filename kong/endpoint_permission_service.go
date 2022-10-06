@@ -27,7 +27,6 @@ type RBACEndpointPermissionService service
 // Create creates a RBACEndpointPermission in Kong.
 func (s *RBACEndpointPermissionService) Create(ctx context.Context,
 	ep *RBACEndpointPermission) (*RBACEndpointPermissionResponse, error) {
-
 	if ep == nil {
 		return nil, fmt.Errorf("cannot create a nil endpointpermission")
 	}
@@ -54,7 +53,6 @@ func (s *RBACEndpointPermissionService) Create(ctx context.Context,
 // Get fetches a RBACEndpointPermission in Kong.
 func (s *RBACEndpointPermissionService) Get(ctx context.Context,
 	roleNameOrID *string, workspaceNameOrID *string, endpointName *string) (*RBACEndpointPermissionResponse, error) {
-
 	if isEmptyString(endpointName) {
 		return nil, fmt.Errorf("endpointName cannot be nil for Get operation")
 	}
@@ -78,7 +76,6 @@ func (s *RBACEndpointPermissionService) Get(ctx context.Context,
 // Update updates a RBACEndpointPermission in Kong.
 func (s *RBACEndpointPermissionService) Update(ctx context.Context,
 	ep *RBACEndpointPermission) (*RBACEndpointPermissionResponse, error) {
-
 	if ep == nil {
 		return nil, fmt.Errorf("cannot update a nil EndpointPermission")
 	}
@@ -93,8 +90,12 @@ func (s *RBACEndpointPermissionService) Update(ctx context.Context,
 		return nil, fmt.Errorf("ID cannot be nil for Update operation")
 	}
 
-	endpoint := fmt.Sprintf("/rbac/roles/%v/endpoints/%v/%v",
-		*ep.Role.ID, *ep.Workspace, *ep.Endpoint)
+	endpointName := ep.Endpoint
+	if *endpointName == "*" {
+		endpointName = String("/" + *endpointName)
+	}
+	endpoint := fmt.Sprintf("/rbac/roles/%v/endpoints/%v%v",
+		*ep.Role.ID, *ep.Workspace, *endpointName)
 	req, err := s.client.NewRequest("PATCH", endpoint, nil, ep)
 	if err != nil {
 		return nil, err
@@ -110,9 +111,9 @@ func (s *RBACEndpointPermissionService) Update(ctx context.Context,
 
 // Delete deletes a EndpointPermission in Kong
 func (s *RBACEndpointPermissionService) Delete(ctx context.Context,
-	roleNameOrID *string, workspaceNameOrID *string, endpoint *string) error {
-
-	if endpoint == nil {
+	roleNameOrID *string, workspaceNameOrID *string, endpointName *string,
+) error {
+	if endpointName == nil {
 		return fmt.Errorf("cannot update a nil EndpointPermission")
 	}
 	if workspaceNameOrID == nil {
@@ -122,8 +123,11 @@ func (s *RBACEndpointPermissionService) Delete(ctx context.Context,
 		return fmt.Errorf("cannot update an EndpointPermission with role as nil")
 	}
 
+	if *endpointName == "*" {
+		endpointName = String("/" + *endpointName)
+	}
 	reqEndpoint := fmt.Sprintf("/rbac/roles/%v/endpoints/%v/%v",
-		*roleNameOrID, *workspaceNameOrID, *endpoint)
+		*roleNameOrID, *workspaceNameOrID, *endpointName)
 	req, err := s.client.NewRequest("DELETE", reqEndpoint, nil, nil)
 	if err != nil {
 		return err
@@ -136,7 +140,6 @@ func (s *RBACEndpointPermissionService) Delete(ctx context.Context,
 // ListAllForRole fetches a list of all RBACEndpointPermissions in Kong for a given role.
 func (s *RBACEndpointPermissionService) ListAllForRole(ctx context.Context,
 	roleNameOrID *string) ([]*RBACEndpointPermissionResponse, error) {
-
 	data, _, err := s.client.list(ctx, fmt.Sprintf("/rbac/roles/%v/endpoints", *roleNameOrID), nil)
 	if err != nil {
 		return nil, err

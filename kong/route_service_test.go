@@ -5,13 +5,15 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRoutesRoute(T *testing.T) {
 	assert := assert.New(T)
+	require := require.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(client)
 
 	route := &Route{}
@@ -29,7 +31,7 @@ func TestRoutesRoute(T *testing.T) {
 	}
 
 	service, err = client.Services.Create(defaultCtx, service)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(service)
 
 	route = &Route{
@@ -37,11 +39,11 @@ func TestRoutesRoute(T *testing.T) {
 		Service: service,
 	}
 	createdRoute, err := client.Routes.Create(defaultCtx, route)
-	assert.Nil(err)
-	assert.NotNil(createdRoute)
+	assert.NoError(err)
+	require.NotNil(createdRoute)
 
 	route, err = client.Routes.Get(defaultCtx, createdRoute.ID)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(route)
 	assert.Empty(route.Methods)
 	assert.Empty(route.Paths)
@@ -49,13 +51,13 @@ func TestRoutesRoute(T *testing.T) {
 	route.Hosts = StringSlice("newHost.com")
 	route.Methods = StringSlice("GET", "POST")
 	route, err = client.Routes.Update(defaultCtx, route)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(route)
 	assert.Equal(1, len(route.Hosts))
 	assert.Equal("newHost.com", *route.Hosts[0])
 
 	err = client.Routes.Delete(defaultCtx, createdRoute.ID)
-	assert.Nil(err)
+	assert.NoError(err)
 
 	// ID can be specified
 	id := uuid.NewString()
@@ -74,7 +76,7 @@ func TestRoutesRoute(T *testing.T) {
 	}
 
 	createdRoute, err = client.Routes.Create(defaultCtx, route)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(createdRoute)
 	assert.Equal(id, *createdRoute.ID)
 	assert.Equal(2, len(createdRoute.SNIs))
@@ -84,10 +86,10 @@ func TestRoutesRoute(T *testing.T) {
 	assert.Equal(80, *createdRoute.Destinations[0].Port)
 
 	err = client.Routes.Delete(defaultCtx, createdRoute.ID)
-	assert.Nil(err)
+	assert.NoError(err)
 
 	err = client.Services.Delete(defaultCtx, service.ID)
-	assert.Nil(err)
+	assert.NoError(err)
 
 	_, err = client.Routes.Create(defaultCtx, nil)
 	assert.NotNil(err)
@@ -101,7 +103,7 @@ func TestRouteWithTags(T *testing.T) {
 	assert := assert.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(client)
 
 	route := &Route{
@@ -111,19 +113,20 @@ func TestRouteWithTags(T *testing.T) {
 	}
 
 	createdRoute, err := client.Routes.Create(defaultCtx, route)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(createdRoute)
 	assert.Equal(StringSlice("tag1", "tag2"), createdRoute.Tags)
 
 	err = client.Routes.Delete(defaultCtx, createdRoute.ID)
-	assert.Nil(err)
+	assert.NoError(err)
 }
 
 func TestCreateInRoute(T *testing.T) {
 	assert := assert.New(T)
+	require := require.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(client)
 
 	service := &Service{
@@ -134,8 +137,8 @@ func TestCreateInRoute(T *testing.T) {
 	}
 
 	createdService, err := client.Services.Create(defaultCtx, service)
-	assert.Nil(err)
-	assert.NotNil(createdService)
+	assert.NoError(err)
+	require.NotNil(createdService)
 
 	route := &Route{
 		Hosts: StringSlice("host1.com", "host2.com"),
@@ -149,18 +152,19 @@ func TestCreateInRoute(T *testing.T) {
 
 	createdRoute, err := client.Routes.CreateInService(defaultCtx,
 		createdService.ID, route)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(createdRoute)
 
-	assert.Nil(client.Routes.Delete(defaultCtx, createdRoute.ID))
-	assert.Nil(client.Services.Delete(defaultCtx, createdService.ID))
+	assert.NoError(client.Routes.Delete(defaultCtx, createdRoute.ID))
+	assert.NoError(client.Services.Delete(defaultCtx, createdService.ID))
 }
 
 func TestRouteListEndpoint(T *testing.T) {
 	assert := assert.New(T)
+	require := require.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(client)
 
 	service := &Service{
@@ -171,7 +175,7 @@ func TestRouteListEndpoint(T *testing.T) {
 	}
 
 	createdService, err := client.Services.Create(defaultCtx, service)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(createdService)
 
 	// fixtures
@@ -193,27 +197,27 @@ func TestRouteListEndpoint(T *testing.T) {
 	// create fixturs
 	for i := 0; i < len(routes); i++ {
 		route, err := client.Routes.Create(defaultCtx, routes[i])
-		assert.Nil(err)
+		assert.NoError(err)
 		assert.NotNil(route)
 		routes[i] = route
 	}
 
 	routesFromKong, next, err := client.Routes.List(defaultCtx, nil)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.Nil(next)
 	assert.NotNil(routesFromKong)
 	assert.Equal(3, len(routesFromKong))
 
 	// check if we see all routes
-	assert.True(compareRoutes(routes, routesFromKong))
+	assert.True(compareRoutes(T, routes, routesFromKong))
 
 	// Test pagination
 	routesFromKong = []*Route{}
 
 	// first page
 	page1, next, err := client.Routes.List(defaultCtx, &ListOpt{Size: 1})
-	assert.Nil(err)
-	assert.NotNil(next)
+	assert.NoError(err)
+	require.NotNil(next)
 	assert.NotNil(page1)
 	assert.Equal(1, len(page1))
 	routesFromKong = append(routesFromKong, page1...)
@@ -221,36 +225,39 @@ func TestRouteListEndpoint(T *testing.T) {
 	// last page
 	next.Size = 2
 	page2, next, err := client.Routes.List(defaultCtx, next)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.Nil(next)
 	assert.NotNil(page2)
 	assert.Equal(2, len(page2))
 	routesFromKong = append(routesFromKong, page2...)
 
-	assert.True(compareRoutes(routes, routesFromKong))
+	assert.True(compareRoutes(T, routes, routesFromKong))
 
 	routesForService, next, err := client.Routes.ListForService(defaultCtx,
 		createdService.ID, nil)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.Nil(next)
 	assert.NotNil(routesForService)
-	assert.True(compareRoutes(routes, routesForService))
+	assert.True(compareRoutes(T, routes, routesForService))
 
 	routes, err = client.Routes.ListAll(defaultCtx)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(routes)
 	assert.Equal(3, len(routes))
 
 	for i := 0; i < len(routes); i++ {
-		assert.Nil(client.Routes.Delete(defaultCtx, routes[i].ID))
+		assert.NoError(client.Routes.Delete(defaultCtx, routes[i].ID))
 	}
 
-	assert.Nil(client.Services.Delete(defaultCtx, createdService.ID))
+	assert.NoError(client.Services.Delete(defaultCtx, createdService.ID))
 }
 
-func compareRoutes(expected, actual []*Route) bool {
+func compareRoutes(T *testing.T, expected, actual []*Route) bool {
 	var expectedUsernames, actualUsernames []string
 	for _, route := range expected {
+		if !assert.NotNil(T, route) {
+			continue
+		}
 		expectedUsernames = append(expectedUsernames, *route.Paths[0])
 	}
 
@@ -266,7 +273,7 @@ func TestRouteWithHeaders(T *testing.T) {
 	assert := assert.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(client)
 
 	route := &Route{
@@ -278,11 +285,11 @@ func TestRouteWithHeaders(T *testing.T) {
 	}
 
 	createdRoute, err := client.Routes.Create(defaultCtx, route)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(createdRoute)
 	assert.Equal(StringSlice("tag1", "tag2"), createdRoute.Tags)
 	assert.Equal(map[string][]string{"foo": {"bar"}}, createdRoute.Headers)
 
 	err = client.Routes.Delete(defaultCtx, createdRoute.ID)
-	assert.Nil(err)
+	assert.NoError(err)
 }

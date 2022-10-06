@@ -8,13 +8,15 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestWorkspaceService(T *testing.T) {
 	assert := assert.New(T)
+	require := require.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(client)
 
 	workspace := &Workspace{
@@ -26,34 +28,34 @@ func TestWorkspaceService(T *testing.T) {
 	}
 
 	createdWorkspace, err := client.Workspaces.Create(defaultCtx, workspace)
-	assert.Nil(err)
-	assert.NotNil(createdWorkspace)
+	assert.NoError(err)
+	require.NotNil(createdWorkspace)
 
 	workspace, err = client.Workspaces.Get(defaultCtx, createdWorkspace.ID)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(workspace)
 
 	exists, err := client.Workspaces.Exists(defaultCtx, createdWorkspace.ID)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.True(exists)
 
 	exists, err = client.Workspaces.ExistsByName(defaultCtx, createdWorkspace.Name)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.True(exists)
 
 	fakeID := *createdWorkspace.ID + "garbage"
 	exists, err = client.Workspaces.Exists(defaultCtx, &fakeID)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.False(exists)
 
 	fakeName := *createdWorkspace.Name + "garbage"
 	exists, err = client.Workspaces.ExistsByName(defaultCtx, &fakeName)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.False(exists)
 
 	workspace.Comment = String("new comment")
 	workspace, err = client.Workspaces.Update(defaultCtx, workspace)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(workspace)
 	assert.NotNil(workspace.Config)
 	assert.Equal("teamA", *workspace.Name)
@@ -61,7 +63,7 @@ func TestWorkspaceService(T *testing.T) {
 	assert.Equal("#814CA6", workspace.Meta["color"])
 
 	err = client.Workspaces.Delete(defaultCtx, createdWorkspace.ID)
-	assert.Nil(err)
+	assert.NoError(err)
 
 	// ID can be specified
 	id := uuid.NewString()
@@ -71,20 +73,21 @@ func TestWorkspaceService(T *testing.T) {
 	}
 
 	createdWorkspace, err = client.Workspaces.Create(defaultCtx, workspace)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(createdWorkspace)
 	assert.Equal(id, *createdWorkspace.ID)
 
 	err = client.Workspaces.Delete(defaultCtx, createdWorkspace.ID)
-	assert.Nil(err)
+	assert.NoError(err)
 }
 
 func TestWorkspaceServiceList(T *testing.T) {
 	assert := assert.New(T)
+	require := require.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.Nil(err)
-	assert.NotNil(client)
+	assert.NoError(err)
+	require.NotNil(client)
 
 	workspaceA := &Workspace{
 		Name: String("teamA"),
@@ -94,34 +97,35 @@ func TestWorkspaceServiceList(T *testing.T) {
 	}
 
 	createdWorkspaceA, err := client.Workspaces.Create(defaultCtx, workspaceA)
-	assert.Nil(err)
+	require.NoError(err)
 	createdWorkspaceB, err := client.Workspaces.Create(defaultCtx, workspaceB)
-	assert.Nil(err)
+	require.NoError(err)
 	// paged List
 	page1, next, err := client.Workspaces.List(defaultCtx, &ListOpt{Size: 1})
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(next)
 	assert.NotNil(page1)
 	assert.Equal(1, len(page1))
 	// nil ListOpt List
 	workspaces, next, err := client.Workspaces.List(defaultCtx, nil)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.Nil(next)
 	assert.NotNil(workspaces)
 	// Counts default workspace
 	assert.Equal(3, len(workspaces))
 
 	err = client.Workspaces.Delete(defaultCtx, createdWorkspaceA.ID)
-	assert.Nil(err)
+	assert.NoError(err)
 	err = client.Workspaces.Delete(defaultCtx, createdWorkspaceB.ID)
-	assert.Nil(err)
+	assert.NoError(err)
 }
 
 func TestWorkspaceServiceListAll(T *testing.T) {
 	assert := assert.New(T)
+	require := require.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(client)
 
 	workspaceA := &Workspace{
@@ -132,20 +136,20 @@ func TestWorkspaceServiceListAll(T *testing.T) {
 	}
 
 	createdWorkspaceA, err := client.Workspaces.Create(defaultCtx, workspaceA)
-	assert.Nil(err)
+	require.NoError(err)
 	createdWorkspaceB, err := client.Workspaces.Create(defaultCtx, workspaceB)
-	assert.Nil(err)
+	require.NoError(err)
 
 	workspaces, err := client.Workspaces.ListAll(defaultCtx)
-	assert.Nil(err)
+	require.NoError(err)
 	assert.NotNil(workspaces)
 	// Counts default workspace
 	assert.Equal(3, len(workspaces))
 
 	err = client.Workspaces.Delete(defaultCtx, createdWorkspaceA.ID)
-	assert.Nil(err)
+	require.NoError(err)
 	err = client.Workspaces.Delete(defaultCtx, createdWorkspaceB.ID)
-	assert.Nil(err)
+	require.NoError(err)
 }
 
 // Workspace entities
@@ -155,7 +159,7 @@ func TestWorkspaceService_Entities(T *testing.T) {
 	assert := assert.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(client)
 
 	workspace := &Workspace{
@@ -168,7 +172,7 @@ func TestWorkspaceService_Entities(T *testing.T) {
 
 	// Create a workspace
 	createdWorkspace, err := client.Workspaces.Create(defaultCtx, workspace)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(createdWorkspace)
 
 	service := &Service{
@@ -180,31 +184,31 @@ func TestWorkspaceService_Entities(T *testing.T) {
 
 	// Create a service
 	createdService, err := client.Services.Create(defaultCtx, service)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(createdService)
 
 	// Add the service to the workspace
 	entities, err := client.Workspaces.AddEntities(
 		defaultCtx, createdWorkspace.ID, createdService.ID)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(entities)
 
 	// List Entities attached to the workspace
 	entitiesAdded, err := client.Workspaces.ListEntities(defaultCtx, createdWorkspace.ID)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(entitiesAdded)
 	// The two entities are records capturing the service name and id
 	assert.Equal(2, len(entitiesAdded))
 
 	// Delete the service from the workspace
 	err = client.Workspaces.DeleteEntities(defaultCtx, createdWorkspace.ID, createdService.ID)
-	assert.Nil(err)
+	assert.NoError(err)
 
 	// Delete the service
 	err = client.Services.Delete(defaultCtx, createdService.ID)
-	assert.Nil(err)
+	assert.NoError(err)
 
 	// Delete the workspace
 	err = client.Workspaces.Delete(defaultCtx, createdWorkspace.ID)
-	assert.Nil(err)
+	assert.NoError(err)
 }

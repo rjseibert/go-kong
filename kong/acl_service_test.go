@@ -5,13 +5,15 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestACLGroupCreate(T *testing.T) {
 	assert := assert.New(T)
+	require := require.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(client)
 
 	acl, err := client.ACLs.Create(defaultCtx,
@@ -36,24 +38,25 @@ func TestACLGroupCreate(T *testing.T) {
 	}
 
 	consumer, err = client.Consumers.Create(defaultCtx, consumer)
-	assert.Nil(err)
-	assert.NotNil(consumer)
+	assert.NoError(err)
+	require.NotNil(consumer)
 
 	acl = &ACLGroup{
 		Group: String("my-group"),
 	}
 	createdACL, err := client.ACLs.Create(defaultCtx, consumer.ID, acl)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(createdACL)
 
-	assert.Nil(client.Consumers.Delete(defaultCtx, consumer.ID))
+	assert.NoError(client.Consumers.Delete(defaultCtx, consumer.ID))
 }
 
 func TestACLGroupCreateWithID(T *testing.T) {
 	assert := assert.New(T)
+	require := require.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(client)
 
 	uuid := uuid.NewString()
@@ -68,24 +71,25 @@ func TestACLGroupCreateWithID(T *testing.T) {
 	}
 
 	consumer, err = client.Consumers.Create(defaultCtx, consumer)
-	assert.Nil(err)
-	assert.NotNil(consumer)
+	assert.NoError(err)
+	require.NotNil(consumer)
 
 	createdACL, err := client.ACLs.Create(defaultCtx, consumer.ID, acl)
-	assert.Nil(err)
-	assert.NotNil(createdACL)
+	assert.NoError(err)
+	require.NotNil(createdACL)
 
 	assert.Equal(uuid, *createdACL.ID)
 	assert.Equal("my-group", *createdACL.Group)
 
-	assert.Nil(client.Consumers.Delete(defaultCtx, consumer.ID))
+	assert.NoError(client.Consumers.Delete(defaultCtx, consumer.ID))
 }
 
 func TestACLGroupGet(T *testing.T) {
 	assert := assert.New(T)
+	require := require.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(client)
 
 	uuid := uuid.NewString()
@@ -100,19 +104,19 @@ func TestACLGroupGet(T *testing.T) {
 	}
 
 	consumer, err = client.Consumers.Create(defaultCtx, consumer)
-	assert.Nil(err)
-	assert.NotNil(consumer)
+	assert.NoError(err)
+	require.NotNil(consumer)
 
 	createdACL, err := client.ACLs.Create(defaultCtx, consumer.ID, acl)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(createdACL)
 
 	aclGroup, err := client.ACLs.Get(defaultCtx, consumer.ID, acl.ID)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.Equal("my-group", *aclGroup.Group)
 
 	aclGroup, err = client.ACLs.Get(defaultCtx, consumer.ID, acl.Group)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.Equal("my-group", *aclGroup.Group)
 
 	aclGroup, err = client.ACLs.Get(defaultCtx, consumer.ID,
@@ -124,14 +128,15 @@ func TestACLGroupGet(T *testing.T) {
 	assert.Nil(aclGroup)
 	assert.NotNil(err)
 
-	assert.Nil(client.Consumers.Delete(defaultCtx, consumer.ID))
+	assert.NoError(client.Consumers.Delete(defaultCtx, consumer.ID))
 }
 
 func TestACLGroupUpdate(T *testing.T) {
 	assert := assert.New(T)
+	require := require.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(client)
 
 	uuid := uuid.NewString()
@@ -146,31 +151,32 @@ func TestACLGroupUpdate(T *testing.T) {
 	}
 
 	consumer, err = client.Consumers.Create(defaultCtx, consumer)
-	assert.Nil(err)
-	assert.NotNil(consumer)
+	assert.NoError(err)
+	require.NotNil(consumer)
 
 	createdACL, err := client.ACLs.Create(defaultCtx, consumer.ID, acl)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(createdACL)
 
 	aclGroup, err := client.ACLs.Get(defaultCtx, consumer.ID, acl.ID)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.Equal("my-group", *aclGroup.Group)
 
 	acl.Group = String("my-new-group")
 	updatedACLGroup, err := client.ACLs.Update(defaultCtx, consumer.ID, acl)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(updatedACLGroup)
 	assert.Equal("my-new-group", *updatedACLGroup.Group)
 
-	assert.Nil(client.Consumers.Delete(defaultCtx, consumer.ID))
+	assert.NoError(client.Consumers.Delete(defaultCtx, consumer.ID))
 }
 
 func TestACLGroupDelete(T *testing.T) {
 	assert := assert.New(T)
+	require := require.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(client)
 
 	uuid := uuid.NewString()
@@ -185,28 +191,29 @@ func TestACLGroupDelete(T *testing.T) {
 	}
 
 	consumer, err = client.Consumers.Create(defaultCtx, consumer)
-	assert.Nil(err)
-	assert.NotNil(consumer)
+	assert.NoError(err)
+	require.NotNil(consumer)
 
 	createdACL, err := client.ACLs.Create(defaultCtx, consumer.ID, acl)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(createdACL)
 
 	err = client.ACLs.Delete(defaultCtx, consumer.ID, acl.Group)
-	assert.Nil(err)
+	assert.NoError(err)
 
 	aclGroup, err := client.ACLs.Get(defaultCtx, consumer.ID, acl.ID)
 	assert.NotNil(err)
 	assert.Nil(aclGroup)
 
-	assert.Nil(client.Consumers.Delete(defaultCtx, consumer.ID))
+	assert.NoError(client.Consumers.Delete(defaultCtx, consumer.ID))
 }
 
 func TestACLGroupListMethods(T *testing.T) {
 	assert := assert.New(T)
+	require := require.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(client)
 
 	// consumer for the ACLGroup
@@ -215,16 +222,16 @@ func TestACLGroupListMethods(T *testing.T) {
 	}
 
 	consumer1, err = client.Consumers.Create(defaultCtx, consumer1)
-	assert.Nil(err)
-	assert.NotNil(consumer1)
+	assert.NoError(err)
+	require.NotNil(consumer1)
 
 	consumer2 := &Consumer{
 		Username: String("bar"),
 	}
 
 	consumer2, err = client.Consumers.Create(defaultCtx, consumer2)
-	assert.Nil(err)
-	assert.NotNil(consumer2)
+	assert.NoError(err)
+	require.NotNil(consumer2)
 
 	// fixtures
 	aclGroups := []*ACLGroup{
@@ -250,20 +257,20 @@ func TestACLGroupListMethods(T *testing.T) {
 	for i := 0; i < len(aclGroups); i++ {
 		acl, err := client.ACLs.Create(defaultCtx,
 			aclGroups[i].Consumer.ID, aclGroups[i])
-		assert.Nil(err)
+		assert.NoError(err)
 		assert.NotNil(acl)
 		aclGroups[i] = acl
 	}
 
 	aclGroupsFromKong, next, err := client.ACLs.List(defaultCtx, nil)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.Nil(next)
 	assert.NotNil(aclGroupsFromKong)
 	assert.Equal(4, len(aclGroupsFromKong))
 
 	// first page
 	page1, next, err := client.ACLs.List(defaultCtx, &ListOpt{Size: 1})
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(next)
 	assert.NotNil(page1)
 	assert.Equal(1, len(page1))
@@ -271,23 +278,23 @@ func TestACLGroupListMethods(T *testing.T) {
 	// last page
 	next.Size = 3
 	page2, next, err := client.ACLs.List(defaultCtx, next)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.Nil(next)
 	assert.NotNil(page2)
 	assert.Equal(3, len(page2))
 
 	aclGroupsForConsumer, next, err := client.ACLs.ListForConsumer(defaultCtx,
 		consumer1.ID, nil)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.Nil(next)
 	assert.NotNil(aclGroupsForConsumer)
 	assert.Equal(2, len(aclGroupsForConsumer))
 
 	aclGroups, err = client.ACLs.ListAll(defaultCtx)
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.NotNil(aclGroups)
 	assert.Equal(4, len(aclGroups))
 
-	assert.Nil(client.Consumers.Delete(defaultCtx, consumer1.ID))
-	assert.Nil(client.Consumers.Delete(defaultCtx, consumer2.ID))
+	assert.NoError(client.Consumers.Delete(defaultCtx, consumer1.ID))
+	assert.NoError(client.Consumers.Delete(defaultCtx, consumer2.ID))
 }
