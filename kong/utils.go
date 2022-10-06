@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/blang/semver/v4"
 	"github.com/imdario/mergo"
 	"github.com/tidwall/gjson"
 )
@@ -105,8 +106,7 @@ func requestWithHeaders(req *http.Request, headers http.Header) *http.Request {
 // HTTPClientWithHeaders returns a client which injects headers
 // before sending any request.
 func HTTPClientWithHeaders(client *http.Client,
-	headers http.Header,
-) *http.Client {
+	headers http.Header) *http.Client {
 	var res *http.Client
 	if client == nil {
 		defaultTransport := http.DefaultTransport.(*http.Transport)
@@ -114,48 +114,35 @@ func HTTPClientWithHeaders(client *http.Client,
 		res.Transport = defaultTransport
 	} else {
 		res = client
-		// If a client with nil transport has been provided then set it to http's
-		// default transport so that the caller is still able to use it.
-		if res.Transport == nil {
-			res.Transport = http.DefaultTransport.(*http.Transport)
-		}
 	}
 	res.Transport = headerRoundTripper{
 		headers: headers,
-		rt:      res.Transport,
+		rt:      client.Transport,
 	}
 	return res
 }
 
 // ParseSemanticVersion creates a semantic version from the version
 // returned by Kong.
-func ParseSemanticVersion(v string) (Version, error) {
-	re := regexp.MustCompile(`((?:\d+\.\d+\.\d+)|(?:\d+\.\d+))(?:[\.-](\d+))?(?:\-?(.+)$|$)`)
+func ParseSemanticVersion(v string) (semver.Version, error) {
+	re := regexp.MustCompile(`(\d+\.\d+)(?:[\.-](\d+))?(?:\-?(.+)$|$)`)
 	m := re.FindStringSubmatch(v)
 	if len(m) != versionParts {
-		return Version{}, fmt.Errorf("unknown Kong version : '%v'", v)
+		return semver.Version{}, fmt.Errorf("unknown Kong version : '%v'", v)
 	}
 	if m[2] == "" {
-		// Only append zero patch version if major and minor have been detected
-		if strings.Count(m[1], ".") == 1 {
-			m[2] = ".0"
-		}
-	} else if strings.Count(m[2], ".") == 0 {
-		// Ensure stripped digit is prefixed with a "."
-		m[2] = "." + m[2]
+		m[2] = "0"
 	}
 	if m[3] != "" {
 		if strings.Contains(m[3], "enterprise") {
-			// Convert enterprise pre-release to build metadata
 			m[3] = "+" + strings.Replace(m[3], "enterprise-edition", "enterprise", 1)
 		} else {
-			// Keep pre-release information intact
 			m[3] = "-" + m[3]
 		}
 		m[3] = strings.Replace(m[3], ".", "", -1)
 	}
-
-	return NewVersion(fmt.Sprintf("%s%s%s", m[1], m[2], m[3]))
+	v = fmt.Sprintf("%s.%s%s", m[1], m[2], m[3])
+	return semver.Make(v)
 }
 
 // VersionFromInfo retrieves the version from the response of root
@@ -183,18 +170,6 @@ func getDefaultProtocols(schema gjson.Result) []*string {
 		}
 	}
 	return res
-}
-
-func getConfigSchema(schema gjson.Result) (gjson.Result, error) {
-	fields := schema.Get("fields")
-
-	for _, field := range fields.Array() {
-		config := field.Map()["config"]
-		if config.Exists() {
-			return config, nil
-		}
-	}
-	return schema, fmt.Errorf("no 'config' field found in schema")
 }
 
 func fillConfigRecord(schema gjson.Result, config Configuration) Configuration {
@@ -249,39 +224,37 @@ func fillConfigRecord(schema gjson.Result, config Configuration) Configuration {
 // into proper entity objects.
 //
 // Sample input:
-//
-//	{
-//		"fields": [
-//	        {
-//	            "algorithm": {
-//	                "default": "round-robin",
-//	                "one_of": ["consistent-hashing", "least-connections", "round-robin"],
-//	                "type": "string"
-//	            }
-//	        }, {
-//	            "hash_on": {
-//	                "default": "none",
-//	                "one_of": ["none", "consumer", "ip", "header", "cookie"],
-//	                "type": "string"
-//	            }
-//	        }, {
-//	            "hash_fallback": {
-//	                "default": "none",
-//	                "one_of": ["none", "consumer", "ip", "header", "cookie"],
-//	                "type": "string"
-//	            }
-//	        },
-//	  ...
-//	}
+// {
+// 	"fields": [
+//         {
+//             "algorithm": {
+//                 "default": "round-robin",
+//                 "one_of": ["consistent-hashing", "least-connections", "round-robin"],
+//                 "type": "string"
+//             }
+//         }, {
+//             "hash_on": {
+//                 "default": "none",
+//                 "one_of": ["none", "consumer", "ip", "header", "cookie"],
+//                 "type": "string"
+//             }
+//         }, {
+//             "hash_fallback": {
+//                 "default": "none",
+//                 "one_of": ["none", "consumer", "ip", "header", "cookie"],
+//                 "type": "string"
+//             }
+//         },
+//   ...
+// }
 //
 // Sample output:
-//
-//	{
-//		"algorithm": "round-robin",
-//		"hash_on": "none",
-//		"hash_fallback": "none",
-//	 ...
-//	}
+// {
+// 	"algorithm": "round-robin",
+// 	"hash_on": "none",
+// 	"hash_fallback": "none",
+//  ...
+// }
 func flattenDefaultsSchema(schema gjson.Result) Schema {
 	value := schema.Get("fields")
 	results := Schema{}
@@ -384,14 +357,10 @@ func FillPluginsDefaults(plugin *Plugin, schema Schema) error {
 		return err
 	}
 	gjsonSchema := gjson.ParseBytes((jsonb))
-	configSchema, err := getConfigSchema(gjsonSchema)
-	if err != nil {
-		return err
-	}
 	if plugin.Config == nil {
 		plugin.Config = make(Configuration)
 	}
-	plugin.Config = fillConfigRecord(configSchema, plugin.Config)
+	plugin.Config = fillConfigRecord(gjsonSchema, plugin.Config)
 	if plugin.Protocols == nil {
 		plugin.Protocols = getDefaultProtocols(gjsonSchema)
 	}

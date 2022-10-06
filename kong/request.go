@@ -11,8 +11,7 @@ import (
 
 // NewRequestRaw creates a request based on the inputs.
 func (c *Client) NewRequestRaw(method, baseURL string, endpoint string, qs interface{},
-	body interface{},
-) (*http.Request, error) {
+	body interface{}) (*http.Request, error) {
 	if endpoint == "" {
 		return nil, fmt.Errorf("endpoint can't be nil")
 	}
@@ -53,7 +52,6 @@ func (c *Client) NewRequestRaw(method, baseURL string, endpoint string, qs inter
 // client creation.
 // body is always marshaled into JSON.
 func (c *Client) NewRequest(method, endpoint string, qs interface{},
-	body interface{},
-) (*http.Request, error) {
+	body interface{}) (*http.Request, error) {
 	return c.NewRequestRaw(method, c.workspacedBaseURL(c.Workspace()), endpoint, qs, body)
 }

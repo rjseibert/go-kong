@@ -5,15 +5,13 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestUpstreamsService(T *testing.T) {
 	assert := assert.New(T)
-	require := require.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(client)
 
 	upstream := &Upstream{
@@ -21,21 +19,21 @@ func TestUpstreamsService(T *testing.T) {
 	}
 
 	createdUpstream, err := client.Upstreams.Create(defaultCtx, upstream)
-	assert.NoError(err)
-	require.NotNil(createdUpstream)
+	assert.Nil(err)
+	assert.NotNil(createdUpstream)
 
 	upstream, err = client.Upstreams.Get(defaultCtx, createdUpstream.ID)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(upstream)
 
 	upstream.Name = String("virtual-host2")
 	upstream, err = client.Upstreams.Update(defaultCtx, upstream)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(upstream)
 	assert.Equal("virtual-host2", *upstream.Name)
 
 	err = client.Upstreams.Delete(defaultCtx, createdUpstream.ID)
-	assert.NoError(err)
+	assert.Nil(err)
 
 	// ID can be specified
 	id := uuid.NewString()
@@ -45,12 +43,12 @@ func TestUpstreamsService(T *testing.T) {
 	}
 
 	createdUpstream, err = client.Upstreams.Create(defaultCtx, upstream)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(createdUpstream)
 	assert.Equal(id, *createdUpstream.ID)
 
 	err = client.Upstreams.Delete(defaultCtx, createdUpstream.ID)
-	assert.NoError(err)
+	assert.Nil(err)
 }
 
 func TestUpstreamWithTags(T *testing.T) {
@@ -58,7 +56,7 @@ func TestUpstreamWithTags(T *testing.T) {
 	assert := assert.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(client)
 
 	upstream := &Upstream{
@@ -67,21 +65,20 @@ func TestUpstreamWithTags(T *testing.T) {
 	}
 
 	createdUpstream, err := client.Upstreams.Create(defaultCtx, upstream)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(createdUpstream)
 	assert.Equal(StringSlice("tag1", "tag2"), createdUpstream.Tags)
 
 	err = client.Upstreams.Delete(defaultCtx, createdUpstream.ID)
-	assert.NoError(err)
+	assert.Nil(err)
 }
 
 // regression test for #6
 func TestUpstreamWithActiveUnHealthyInterval(T *testing.T) {
 	assert := assert.New(T)
-	require := require.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(client)
 
 	upstream := &Upstream{
@@ -96,11 +93,11 @@ func TestUpstreamWithActiveUnHealthyInterval(T *testing.T) {
 	}
 
 	createdUpstream, err := client.Upstreams.Create(defaultCtx, upstream)
-	assert.NoError(err)
-	require.NotNil(createdUpstream)
+	assert.Nil(err)
+	assert.NotNil(createdUpstream)
 
 	err = client.Upstreams.Delete(defaultCtx, createdUpstream.ID)
-	assert.NoError(err)
+	assert.Nil(err)
 }
 
 // regression test for #6
@@ -108,7 +105,7 @@ func TestUpstreamWithPassiveUnHealthyInterval(T *testing.T) {
 	assert := assert.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(client)
 
 	upstream := &Upstream{
@@ -129,10 +126,9 @@ func TestUpstreamWithPassiveUnHealthyInterval(T *testing.T) {
 
 func TestUpstreamWithPassiveHealthy(T *testing.T) {
 	assert := assert.New(T)
-	require := require.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(client)
 
 	upstream := &Upstream{
@@ -149,12 +145,12 @@ func TestUpstreamWithPassiveHealthy(T *testing.T) {
 	}
 
 	createdUpstream, err := client.Upstreams.Create(defaultCtx, upstream)
-	assert.NoError(err)
-	require.NotNil(createdUpstream)
+	assert.Nil(err)
+	assert.NotNil(createdUpstream)
 	assert.Equal("http", *createdUpstream.Healthchecks.Passive.Type)
 
 	err = client.Upstreams.Delete(defaultCtx, createdUpstream.ID)
-	assert.NoError(err)
+	assert.Nil(err)
 }
 
 func TestUpstreamWithAlgorithm(T *testing.T) {
@@ -162,7 +158,7 @@ func TestUpstreamWithAlgorithm(T *testing.T) {
 	assert := assert.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(client)
 
 	upstream := &Upstream{
@@ -171,19 +167,19 @@ func TestUpstreamWithAlgorithm(T *testing.T) {
 	}
 
 	createdUpstream, err := client.Upstreams.Create(defaultCtx, upstream)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(createdUpstream)
 	assert.Equal("least-connections", *createdUpstream.Algorithm)
 
 	err = client.Upstreams.Delete(defaultCtx, createdUpstream.ID)
-	assert.NoError(err)
+	assert.Nil(err)
 }
 
 func TestUpstreamListEndpoint(T *testing.T) {
 	assert := assert.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(client)
 
 	// fixtures
@@ -202,26 +198,26 @@ func TestUpstreamListEndpoint(T *testing.T) {
 	// create fixturs
 	for i := 0; i < len(upstreams); i++ {
 		upstream, err := client.Upstreams.Create(defaultCtx, upstreams[i])
-		assert.NoError(err)
+		assert.Nil(err)
 		assert.NotNil(upstream)
 		upstreams[i] = upstream
 	}
 
 	upstreamsFromKong, next, err := client.Upstreams.List(defaultCtx, nil)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.Nil(next)
 	assert.NotNil(upstreamsFromKong)
 	assert.Equal(3, len(upstreamsFromKong))
 
 	// check if we see all upstreams
-	assert.True(compareUpstreams(T, upstreams, upstreamsFromKong))
+	assert.True(compareUpstreams(upstreams, upstreamsFromKong))
 
 	// Test pagination
 	upstreamsFromKong = []*Upstream{}
 
 	// first page
 	page1, next, err := client.Upstreams.List(defaultCtx, &ListOpt{Size: 1})
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(next)
 	assert.NotNil(page1)
 	assert.Equal(1, len(page1))
@@ -229,7 +225,7 @@ func TestUpstreamListEndpoint(T *testing.T) {
 
 	// second page
 	page2, next, err := client.Upstreams.List(defaultCtx, next)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(next)
 	assert.NotNil(page2)
 	assert.Equal(1, len(page2))
@@ -237,30 +233,27 @@ func TestUpstreamListEndpoint(T *testing.T) {
 
 	// last page
 	page3, next, err := client.Upstreams.List(defaultCtx, next)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.Nil(next)
 	assert.NotNil(page3)
 	assert.Equal(1, len(page3))
 	upstreamsFromKong = append(upstreamsFromKong, page3...)
 
-	assert.True(compareUpstreams(T, upstreams, upstreamsFromKong))
+	assert.True(compareUpstreams(upstreams, upstreamsFromKong))
 
 	upstreams, err = client.Upstreams.ListAll(defaultCtx)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(upstreams)
 	assert.Equal(3, len(upstreams))
 
 	for i := 0; i < len(upstreams); i++ {
-		assert.NoError(client.Upstreams.Delete(defaultCtx, upstreams[i].ID))
+		assert.Nil(client.Upstreams.Delete(defaultCtx, upstreams[i].ID))
 	}
 }
 
-func compareUpstreams(T *testing.T, expected, actual []*Upstream) bool {
+func compareUpstreams(expected, actual []*Upstream) bool {
 	var expectedNames, actualNames []string
 	for _, upstream := range expected {
-		if !assert.NotNil(T, upstream) {
-			continue
-		}
 		expectedNames = append(expectedNames, *upstream.Name)
 	}
 
@@ -276,7 +269,7 @@ func TestUpstreamsWithHostHeader(T *testing.T) {
 	assert := assert.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(client)
 
 	upstream := &Upstream{
@@ -285,10 +278,10 @@ func TestUpstreamsWithHostHeader(T *testing.T) {
 	}
 
 	createdUpstream, err := client.Upstreams.Create(defaultCtx, upstream)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(createdUpstream)
 	assert.Equal("example.com", *createdUpstream.HostHeader)
 
 	err = client.Upstreams.Delete(defaultCtx, createdUpstream.ID)
-	assert.NoError(err)
+	assert.Nil(err)
 }

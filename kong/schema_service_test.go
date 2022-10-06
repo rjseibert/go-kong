@@ -10,7 +10,7 @@ func TestSchemaService(T *testing.T) {
 	assert := assert.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(client)
 
 	entities := []string{
@@ -29,6 +29,6 @@ func TestSchemaService(T *testing.T) {
 		schema, err := client.Schemas.Get(defaultCtx, entity)
 		_, ok := schema["fields"]
 		assert.True(ok)
-		assert.NoError(err)
+		assert.Nil(err)
 	}
 }

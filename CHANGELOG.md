@@ -1,9 +1,5 @@
 # Table of Contents
 
-- [v0.31.1](#v0311)
-- [v0.31.0](#v0310)
-- [v0.30.0](#v0300)
-- [v0.29.0](#v0290)
 - [v0.28.1](#v0281)
 - [v0.28.0](#v0280)
 - [v0.27.0](#v0270)
@@ -38,72 +34,6 @@
 - [0.3.0](#030)
 - [0.2.0](#020)
 - [0.1.0](#010)
-
-## [v0.32.0]
-
-> Release date: 2022/08/23
-
-This release is not yet fully compatible with Kong 3.x. The target service `MarkHealthy()` and `MarkUnhealthy()`
-functions do not yet work on 3.x. Other functionality supports 3.x, but may not yet support all new 3.x schema fields.
-
-- Added support for 3.x Enterprise version strings.
-  [#207](https://github.com/Kong/go-kong/pull/207)
-- Added support for `expression` and `priority` route fields.
-  [#210](https://github.com/Kong/go-kong/pull/210)
-- Dropped support for 1.5 Enterprise, which exited sunset support in 2022-04.
-- Added 3.x to test matrices.
-
-## [v0.31.1]
-
-> Release date: 2022/08/23
-
-- Fixed support for plugins with IDs in `ForService` variants of plugin calls.
-  [#205](https://github.com/Kong/go-kong/pull/205)
-
-## [v0.31.0]
-
-> Release date: 2022/08/16
-
-- Updated to Go 1.19.
-- Added `ForService` variants of plugin calls, which use
-  `/service/<id>/plugins/` endpoints.
-  [#192](https://github.com/Kong/go-kong/pull/192)
-- Added support for Kong 3.0 upstream fields.
-  [#200](https://github.com/Kong/go-kong/pull/200)
-
-## [v0.30.0]
-
-> Release date: 2022/07/11
-
-- Updated to Go 1.18.
-  [#164](https://github.com/Kong/go-kong/pull/164)
-- Fixed an issue with the HTTP client wrapper not setting any transport when
-  none was configured. It now uses the default transport.
-  [#179](https://github.com/Kong/go-kong/pull/179)
-- Added support for the new `ordering` field on Enterprise 3.x plugins.
-  [#187](https://github.com/Kong/go-kong/pull/187)
-
-## [v0.29.0]
-
-> Release date: 2022/03/25
-
-- Fixed a bug where `HTTPClientWithHeaders()` could not accept a `nil`
-  (default) client.
-  [#138](https://github.com/Kong/go-kong/pull/138)
-- Fixed a bug where the plugin service's `Validate()` method could not handle
-  errors associated with empty responses.
-  [#142](https://github.com/Kong/go-kong/pull/142)
-- Fixed a bug where plugin schema default retrieval included fields outside the
-  plugin's `config` object.
-  [#145](https://github.com/Kong/go-kong/pull/145)
-- Fixed a typo in the `EntityCRUD.CRUDPath` JSON serialization.
-  [#149](https://github.com/Kong/go-kong/pull/149)
-- Added support for the new `configuration_hash` field in the status service.
-  [#150](https://github.com/Kong/go-kong/pull/150)
-- Fixed incorrect JSON marshalling/unmarshalling for RBAC endpoint permissions.
-  [#148](https://github.com/Kong/go-kong/pull/148)
-- Fixed a bug with RBAC endpoint permission path construction.
-  [#148](https://github.com/Kong/go-kong/pull/148)
 
 ## [v0.28.1]
 
@@ -608,10 +538,6 @@ authentication credentials in Kong.
   releases of Kong since every release of Kong is introducing breaking changes
   to the Admin API.
 
-[v0.31.1]: https://github.com/Kong/go-kong/compare/v0.31.0...v0.31.1
-[v0.31.0]: https://github.com/Kong/go-kong/compare/v0.30.0...v0.31.0
-[v0.30.0]: https://github.com/Kong/go-kong/compare/v0.29.0...v0.30.0
-[v0.29.0]: https://github.com/Kong/go-kong/compare/v0.28.1...v0.29.0
 [v0.28.1]: https://github.com/Kong/go-kong/compare/v0.28.0...v0.28.1
 [v0.28.0]: https://github.com/Kong/go-kong/compare/v0.27.0...v0.28.0
 [v0.27.0]: https://github.com/Kong/go-kong/compare/v0.26.0...v0.27.0

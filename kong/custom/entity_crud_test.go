@@ -1,11 +1,9 @@
 package custom
 
 import (
-	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/yaml.v2"
 )
 
 func TestRender(t *testing.T) {
@@ -14,7 +12,7 @@ func TestRender(t *testing.T) {
 	entity := NewEntityObject("key-auth")
 	entity.AddRelation("consumer_id", "bob")
 	result, err := render("/consumers/${consumer_id}/key-auths", entity)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.Equal(result, "/consumers/bob/key-auths")
 
 	result, err = render("/consumers/${random_id}/key-auths", entity)
@@ -43,23 +41,23 @@ func TestEntityCRUDDefinition(t *testing.T) {
 
 	assert.Equal(typ, e.Type())
 	url, err := e.GetEndpoint(entity)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.Equal("/consumers/gopher/foo/unique-id", url)
 
 	url, err = e.PatchEndpoint(entity)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.Equal("/consumers/gopher/foo/unique-id", url)
 
 	url, err = e.DeleteEndpoint(entity)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.Equal("/consumers/gopher/foo/unique-id", url)
 
 	url, err = e.PostEndpoint(entity)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.Equal("/consumers/gopher/foo", url)
 
 	url, err = e.ListEndpoint(entity)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.Equal("/consumers/gopher/foo", url)
 
 	entity = NewEntityObject(typ)
@@ -90,35 +88,4 @@ func TestEntityCRUDDefinition(t *testing.T) {
 	url, err = e.GetEndpoint(entity)
 	assert.NotNil(err)
 	assert.Empty(url)
-}
-
-func TestEntityCRUDUnmarshal(t *testing.T) {
-	assert := assert.New(t)
-
-	t.Run("unmarshal JSON into EntityCRUDDefinition", func(t *testing.T) {
-		bytes := []byte(`{
-			"name": "name",
-			"crud": "crud-path",
-			"primary_key": "primary-key"
-		}`)
-		var def EntityCRUDDefinition
-		err := json.Unmarshal(bytes, &def)
-		assert.NoError(err)
-		assert.Equal(Type("name"), def.Name)
-		assert.Equal("crud-path", def.CRUDPath)
-		assert.Equal("primary-key", def.PrimaryKey)
-	})
-
-	t.Run("unmarshal YAML into EntityCRUDDefinition", func(t *testing.T) {
-		var def EntityCRUDDefinition
-		bytes := []byte(`
-name: "name"
-crud: "crud-path"
-primary_key: "primary-key"`)
-		err := yaml.Unmarshal(bytes, &def)
-		assert.NoError(err)
-		assert.Equal(Type("name"), def.Name)
-		assert.Equal("crud-path", def.CRUDPath)
-		assert.Equal("primary-key", def.PrimaryKey)
-	})
 }

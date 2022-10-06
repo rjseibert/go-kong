@@ -32,8 +32,7 @@ type CustomEntityService service
 // Get fetches a custom entity. The primary key and all relations of the
 // entity must be populated in entity.
 func (s *CustomEntityService) Get(ctx context.Context,
-	entity custom.Entity,
-) (custom.Entity, error) {
+	entity custom.Entity) (custom.Entity, error) {
 	def := s.client.Lookup(entity.Type())
 	if def == nil {
 		return nil, fmt.Errorf("entity '" + string(entity.Type()) +
@@ -62,8 +61,7 @@ func (s *CustomEntityService) Get(ctx context.Context,
 // Create creates a custom entity based on entity.
 // All required fields must be present in entity.
 func (s *CustomEntityService) Create(ctx context.Context,
-	entity custom.Entity,
-) (custom.Entity, error) {
+	entity custom.Entity) (custom.Entity, error) {
 	def := s.client.Lookup(entity.Type())
 	if def == nil {
 		return nil, fmt.Errorf("entity '" + string(entity.Type()) +
@@ -88,7 +86,7 @@ func (s *CustomEntityService) Create(ctx context.Context,
 	o := entity.Object()
 	// Necessary to Marshal an empty map
 	// as {} and not null
-	if len(o) == 0 {
+	if o == nil || len(o) == 0 {
 		o = make(map[string]interface{})
 	}
 	req, err := s.client.NewRequest(method, queryPath, nil, o)
@@ -107,8 +105,7 @@ func (s *CustomEntityService) Create(ctx context.Context,
 
 // Update updates a custom entity in Kong.
 func (s *CustomEntityService) Update(ctx context.Context,
-	entity custom.Entity,
-) (custom.Entity, error) {
+	entity custom.Entity) (custom.Entity, error) {
 	def := s.client.Lookup(entity.Type())
 	if def == nil {
 		return nil, fmt.Errorf("entity '" + string(entity.Type()) +
@@ -123,7 +120,7 @@ func (s *CustomEntityService) Update(ctx context.Context,
 	o := entity.Object()
 	// Necessary to Marshal an empty map
 	// as {} and not null
-	if len(o) == 0 {
+	if o == nil || len(o) == 0 {
 		o = make(map[string]interface{})
 	}
 	req, err := s.client.NewRequest("PATCH", queryPath, nil, o)
@@ -142,8 +139,7 @@ func (s *CustomEntityService) Update(ctx context.Context,
 
 // Delete deletes a custom entity in Kong.
 func (s *CustomEntityService) Delete(ctx context.Context,
-	entity custom.Entity,
-) error {
+	entity custom.Entity) error {
 	def := s.client.Lookup(entity.Type())
 	if def == nil {
 		return fmt.Errorf("entity '" + string(entity.Type()) +
@@ -166,8 +162,7 @@ func (s *CustomEntityService) Delete(ctx context.Context,
 
 // List fetches all custom entities based on relations
 func (s *CustomEntityService) List(ctx context.Context, opt *ListOpt,
-	entity custom.Entity,
-) ([]custom.Entity, *ListOpt, error) {
+	entity custom.Entity) ([]custom.Entity, *ListOpt, error) {
 	def := s.client.Lookup(entity.Type())
 	if def == nil {
 		return nil, nil, fmt.Errorf("entity '" + string(entity.Type()) +
@@ -208,8 +203,7 @@ func (s *CustomEntityService) List(ctx context.Context, opt *ListOpt,
 
 // ListAll fetches all custom entities based on relations
 func (s *CustomEntityService) ListAll(ctx context.Context,
-	entity custom.Entity,
-) ([]custom.Entity, error) {
+	entity custom.Entity) ([]custom.Entity, error) {
 	var entities, data []custom.Entity
 	var err error
 	opt := &ListOpt{Size: pageSize}
