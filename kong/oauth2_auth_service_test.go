@@ -5,15 +5,13 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestOauth2CredentialCreate(T *testing.T) {
 	assert := assert.New(T)
-	require := require.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(client)
 
 	oauth2Cred, err := client.Oauth2Credentials.Create(defaultCtx,
@@ -33,8 +31,8 @@ func TestOauth2CredentialCreate(T *testing.T) {
 	}
 
 	consumer, err = client.Consumers.Create(defaultCtx, consumer)
-	assert.NoError(err)
-	require.NotNil(consumer)
+	assert.Nil(err)
+	assert.NotNil(consumer)
 
 	oauth2Cred = &Oauth2Credential{
 		ClientID:     String("foo"),
@@ -43,19 +41,18 @@ func TestOauth2CredentialCreate(T *testing.T) {
 	}
 	oauth2Cred, err = client.Oauth2Credentials.Create(defaultCtx,
 		consumer.ID, oauth2Cred)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(oauth2Cred)
 	assert.NotNil(oauth2Cred.ClientSecret)
 
-	assert.NoError(client.Consumers.Delete(defaultCtx, consumer.ID))
+	assert.Nil(client.Consumers.Delete(defaultCtx, consumer.ID))
 }
 
 func TestOauth2CredentialCreateWithID(T *testing.T) {
 	assert := assert.New(T)
-	require := require.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(client)
 
 	uuid := uuid.NewString()
@@ -73,27 +70,26 @@ func TestOauth2CredentialCreateWithID(T *testing.T) {
 	}
 
 	consumer, err = client.Consumers.Create(defaultCtx, consumer)
-	assert.NoError(err)
-	require.NotNil(consumer)
+	assert.Nil(err)
+	assert.NotNil(consumer)
 
 	createdOauth2Credential, err := client.Oauth2Credentials.Create(
 		defaultCtx, consumer.ID, oauth2Cred)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(createdOauth2Credential)
 
 	assert.Equal(uuid, *createdOauth2Credential.ID)
 	assert.Equal("my-clientid", *createdOauth2Credential.ClientID)
 	assert.Equal("my-client-secret", *createdOauth2Credential.ClientSecret)
 
-	assert.NoError(client.Consumers.Delete(defaultCtx, consumer.ID))
+	assert.Nil(client.Consumers.Delete(defaultCtx, consumer.ID))
 }
 
 func TestOauth2CredentialGet(T *testing.T) {
 	assert := assert.New(T)
-	require := require.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(client)
 
 	uuid := uuid.NewString()
@@ -110,22 +106,22 @@ func TestOauth2CredentialGet(T *testing.T) {
 	}
 
 	consumer, err = client.Consumers.Create(defaultCtx, consumer)
-	assert.NoError(err)
-	require.NotNil(consumer)
+	assert.Nil(err)
+	assert.NotNil(consumer)
 
 	createdOauth2Credential, err := client.Oauth2Credentials.Create(defaultCtx,
 		consumer.ID, oauth2Cred)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(createdOauth2Credential)
 
 	oauth2Cred, err = client.Oauth2Credentials.Get(defaultCtx,
 		consumer.ID, oauth2Cred.ID)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.Equal("foo-clientid", *oauth2Cred.ClientID)
 
 	oauth2Cred, err = client.Oauth2Credentials.Get(defaultCtx, consumer.ID,
 		String("foo-clientid"))
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(oauth2Cred)
 
 	oauth2Cred, err = client.Oauth2Credentials.Get(defaultCtx, consumer.ID,
@@ -138,16 +134,15 @@ func TestOauth2CredentialGet(T *testing.T) {
 	assert.Nil(oauth2Cred)
 	assert.NotNil(err)
 
-	assert.NoError(client.Consumers.Delete(defaultCtx, consumer.ID))
+	assert.Nil(client.Consumers.Delete(defaultCtx, consumer.ID))
 }
 
 func TestOauth2CredentialUpdate(T *testing.T) {
 	RunWhenKong(T, "<=2.0.5")
 	assert := assert.New(T)
-	require := require.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(client)
 
 	uuid := uuid.NewString()
@@ -164,36 +159,36 @@ func TestOauth2CredentialUpdate(T *testing.T) {
 	}
 
 	consumer, err = client.Consumers.Create(defaultCtx, consumer)
-	assert.NoError(err)
-	require.NotNil(consumer)
+	assert.Nil(err)
+	assert.NotNil(consumer)
 
 	createdOauth2Credential, err := client.Oauth2Credentials.Create(
 		defaultCtx, consumer.ID, oauth2Cred)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(createdOauth2Credential)
 
 	oauth2Cred, err = client.Oauth2Credentials.Get(defaultCtx,
 		consumer.ID, oauth2Cred.ID)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.Equal("foo-name", *oauth2Cred.Name)
 
 	oauth2Cred.Name = String("new-foo-name")
 	oauth2Cred.ClientSecret = String("my-new-secret")
-	updatedOauth2Credential, err := client.Oauth2Credentials.Update(defaultCtx, consumer.ID, oauth2Cred)
-	assert.NoError(err)
+	updatedOauth2Credential, err :=
+		client.Oauth2Credentials.Update(defaultCtx, consumer.ID, oauth2Cred)
+	assert.Nil(err)
 	assert.NotNil(updatedOauth2Credential)
 	assert.Equal("new-foo-name", *updatedOauth2Credential.Name)
 	assert.Equal("my-new-secret", *updatedOauth2Credential.ClientSecret)
 
-	assert.NoError(client.Consumers.Delete(defaultCtx, consumer.ID))
+	assert.Nil(client.Consumers.Delete(defaultCtx, consumer.ID))
 }
 
 func TestOauth2CredentialDelete(T *testing.T) {
 	assert := assert.New(T)
-	require := require.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(client)
 
 	uuid := uuid.NewString()
@@ -210,31 +205,31 @@ func TestOauth2CredentialDelete(T *testing.T) {
 	}
 
 	consumer, err = client.Consumers.Create(defaultCtx, consumer)
-	assert.NoError(err)
-	require.NotNil(consumer)
+	assert.Nil(err)
+	assert.NotNil(consumer)
 
-	createdOauth2Credential, err := client.Oauth2Credentials.Create(defaultCtx, consumer.ID, oauth2Cred)
-	assert.NoError(err)
+	createdOauth2Credential, err :=
+		client.Oauth2Credentials.Create(defaultCtx, consumer.ID, oauth2Cred)
+	assert.Nil(err)
 	assert.NotNil(createdOauth2Credential)
 
 	err = client.Oauth2Credentials.Delete(defaultCtx,
 		consumer.ID, oauth2Cred.ClientID)
-	assert.NoError(err)
+	assert.Nil(err)
 
 	oauth2Cred, err = client.Oauth2Credentials.Get(defaultCtx,
 		consumer.ID, oauth2Cred.ClientID)
 	assert.NotNil(err)
 	assert.Nil(oauth2Cred)
 
-	assert.NoError(client.Consumers.Delete(defaultCtx, consumer.ID))
+	assert.Nil(client.Consumers.Delete(defaultCtx, consumer.ID))
 }
 
 func TestOauth2CredentialListMethods(T *testing.T) {
 	assert := assert.New(T)
-	require := require.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(client)
 
 	// consumer for the oauth2 cred
@@ -243,16 +238,16 @@ func TestOauth2CredentialListMethods(T *testing.T) {
 	}
 
 	consumer1, err = client.Consumers.Create(defaultCtx, consumer1)
-	assert.NoError(err)
-	require.NotNil(consumer1)
+	assert.Nil(err)
+	assert.NotNil(consumer1)
 
 	consumer2 := &Consumer{
 		Username: String("bar"),
 	}
 
 	consumer2, err = client.Consumers.Create(defaultCtx, consumer2)
-	assert.NoError(err)
-	require.NotNil(consumer2)
+	assert.Nil(err)
+	assert.NotNil(consumer2)
 
 	// fixtures
 	oauth2Creds := []*Oauth2Credential{
@@ -286,20 +281,22 @@ func TestOauth2CredentialListMethods(T *testing.T) {
 	for i := 0; i < len(oauth2Creds); i++ {
 		oauth2Cred, err := client.Oauth2Credentials.Create(defaultCtx,
 			oauth2Creds[i].Consumer.ID, oauth2Creds[i])
-		assert.NoError(err)
+		assert.Nil(err)
 		assert.NotNil(oauth2Cred)
 		oauth2Creds[i] = oauth2Cred
 	}
 
-	oauth2CredsFromKong, next, err := client.Oauth2Credentials.List(defaultCtx, nil)
-	assert.NoError(err)
+	oauth2CredsFromKong, next, err :=
+		client.Oauth2Credentials.List(defaultCtx, nil)
+	assert.Nil(err)
 	assert.Nil(next)
 	assert.NotNil(oauth2CredsFromKong)
 	assert.Equal(4, len(oauth2CredsFromKong))
 
 	// first page
-	page1, next, err := client.Oauth2Credentials.List(defaultCtx, &ListOpt{Size: 1})
-	assert.NoError(err)
+	page1, next, err :=
+		client.Oauth2Credentials.List(defaultCtx, &ListOpt{Size: 1})
+	assert.Nil(err)
 	assert.NotNil(next)
 	assert.NotNil(page1)
 	assert.Equal(1, len(page1))
@@ -307,22 +304,23 @@ func TestOauth2CredentialListMethods(T *testing.T) {
 	// last page
 	next.Size = 3
 	page2, next, err := client.Oauth2Credentials.List(defaultCtx, next)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.Nil(next)
 	assert.NotNil(page2)
 	assert.Equal(3, len(page2))
 
-	oauth2CredsForConsumer, next, err := client.Oauth2Credentials.ListForConsumer(defaultCtx, consumer1.ID, nil)
-	assert.NoError(err)
+	oauth2CredsForConsumer, next, err :=
+		client.Oauth2Credentials.ListForConsumer(defaultCtx, consumer1.ID, nil)
+	assert.Nil(err)
 	assert.Nil(next)
 	assert.NotNil(oauth2CredsForConsumer)
 	assert.Equal(2, len(oauth2CredsForConsumer))
 
 	oauth2Creds, err = client.Oauth2Credentials.ListAll(defaultCtx)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(oauth2Creds)
 	assert.Equal(4, len(oauth2Creds))
 
-	assert.NoError(client.Consumers.Delete(defaultCtx, consumer1.ID))
-	assert.NoError(client.Consumers.Delete(defaultCtx, consumer2.ID))
+	assert.Nil(client.Consumers.Delete(defaultCtx, consumer1.ID))
+	assert.Nil(client.Consumers.Delete(defaultCtx, consumer2.ID))
 }

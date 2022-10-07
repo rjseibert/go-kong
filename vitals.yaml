@@ -1,9 +1,0 @@
-apiVersion: v1
-metadata:
-   askId:
-      - UHGWM110-018899
-   caAgileId: NA
-   projectKey: com.optum.APIGateway.go-kong
-   projectFriendlyName: go-kong
-   componentType: code
-   targetQG: GATE_09

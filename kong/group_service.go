@@ -19,6 +19,8 @@ type AbstractGroupService interface {
 	Update(ctx context.Context, Group *Group) (*Group, error)
 	// Delete deletes a Group in Kong
 	Delete(ctx context.Context, emailOrID *string) error
+	// Add an RBACRole to a Group
+	AddRBACRoleToGroup(ctx context.Context, groupId *string, rbacRoleToGroupRequest RBACRoleToGroupRequest) error
 	// List fetches a list of Groups in Kong.
 	List(ctx context.Context, opt *ListOpt) ([]*Group, *ListOpt, error)
 	// ListAll fetches all Groups in Kong.
@@ -62,7 +64,7 @@ func (s *GroupService) Get(ctx context.Context,
 		return nil, fmt.Errorf("emailOrID cannot be nil for Get operation")
 	}
 
-	endpoint := fmt.Sprintf("/Groups/%v", *emailOrID)
+	endpoint := fmt.Sprintf("/groups/%v", *emailOrID)
 	req, err := s.client.NewRequest("GET", endpoint, nil, nil)
 	if err != nil {
 		return nil, err
@@ -88,7 +90,7 @@ func (s *GroupService) GetByCustomID(ctx context.Context,
 		CustomID string `url:"custom_id,omitempty"`
 	}
 
-	req, err := s.client.NewRequest("GET", "/Groups",
+	req, err := s.client.NewRequest("GET", "/groups",
 		&QS{CustomID: *customID}, nil)
 	if err != nil {
 		return nil, err
@@ -150,6 +152,32 @@ func (s *GroupService) Delete(ctx context.Context,
 
 	_, err = s.client.Do(ctx, req, nil)
 	return err
+}
+
+func (s *GroupService) AddRBACRoleToGroup(ctx context.Context,
+	groupId *string,
+	rbacRoleToGroupRequest RBACRoleToGroupRequest) error {
+	if isEmptyString(groupId) {
+		return fmt.Errorf("GroupID cannot be nil to add Role to Group")
+	}
+	if isEmptyString(rbacRoleToGroupRequest.RBACRoleID) {
+		return fmt.Errorf("RBACRoleID cannot be nil to add Role to Group")
+	}
+	if isEmptyString(rbacRoleToGroupRequest.WorkspaceID) {
+		return fmt.Errorf("WorkspaceID cannot be nil to add Role to Group")
+	}
+	endpoint := fmt.Sprintf("/groups/%s/roles", *groupId)
+
+	req, err := s.client.NewRequest("POST", endpoint, nil, rbacRoleToGroupRequest)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.client.Do(ctx, req, nil)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // List fetches a list of Groups in Kong.

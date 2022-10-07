@@ -3,7 +3,6 @@ package kong
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 )
 
 // Service represents a Service in Kong.
@@ -43,7 +42,6 @@ type CIDRPort struct {
 // +k8s:deepcopy-gen=true
 type Route struct {
 	CreatedAt     *int                `json:"created_at,omitempty" yaml:"created_at,omitempty"`
-	Expression    *string             `json:"expression,omitempty" yaml:"expression,omitempty"`
 	Hosts         []*string           `json:"hosts,omitempty" yaml:"hosts,omitempty"`
 	Headers       map[string][]string `json:"headers,omitempty" yaml:"headers,omitempty"`
 	ID            *string             `json:"id,omitempty" yaml:"id,omitempty"`
@@ -52,7 +50,6 @@ type Route struct {
 	Paths         []*string           `json:"paths,omitempty" yaml:"paths,omitempty"`
 	PathHandling  *string             `json:"path_handling,omitempty" yaml:"path_handling,omitempty"`
 	PreserveHost  *bool               `json:"preserve_host,omitempty" yaml:"preserve_host,omitempty"`
-	Priority      *int                `json:"priority,omitempty" yaml:"priority,omitempty"`
 	Protocols     []*string           `json:"protocols,omitempty" yaml:"protocols,omitempty"`
 	RegexPriority *int                `json:"regex_priority,omitempty" yaml:"regex_priority,omitempty"`
 	Service       *Service            `json:"service,omitempty" yaml:"service,omitempty"`
@@ -220,25 +217,21 @@ type UpstreamNodeHealth struct {
 // Upstream represents an Upstream in Kong.
 // +k8s:deepcopy-gen=true
 type Upstream struct {
-	ID                     *string      `json:"id,omitempty" yaml:"id,omitempty"`
-	Name                   *string      `json:"name,omitempty" yaml:"name,omitempty"`
-	HostHeader             *string      `json:"host_header,omitempty" yaml:"host_header,omitempty"`
-	ClientCertificate      *Certificate `json:"client_certificate,omitempty" yaml:"client_certificate,omitempty"`
-	Algorithm              *string      `json:"algorithm,omitempty" yaml:"algorithm,omitempty"`
-	Slots                  *int         `json:"slots,omitempty" yaml:"slots,omitempty"`
-	Healthchecks           *Healthcheck `json:"healthchecks,omitempty" yaml:"healthchecks,omitempty"`
-	CreatedAt              *int64       `json:"created_at,omitempty" yaml:"created_at,omitempty"`
-	HashOn                 *string      `json:"hash_on,omitempty" yaml:"hash_on,omitempty"`
-	HashFallback           *string      `json:"hash_fallback,omitempty" yaml:"hash_fallback,omitempty"`
-	HashOnHeader           *string      `json:"hash_on_header,omitempty" yaml:"hash_on_header,omitempty"`
-	HashFallbackHeader     *string      `json:"hash_fallback_header,omitempty" yaml:"hash_fallback_header,omitempty"`
-	HashOnCookie           *string      `json:"hash_on_cookie,omitempty" yaml:"hash_on_cookie,omitempty"`
-	HashOnCookiePath       *string      `json:"hash_on_cookie_path,omitempty" yaml:"hash_on_cookie_path,omitempty"`
-	HashOnQueryArg         *string      `json:"hash_on_query_arg,omitempty" yaml:"hash_on_query_arg,omitempty"`
-	HashFallbackQueryArg   *string      `json:"hash_fallback_query_arg,omitempty" yaml:"hash_fallback_query_arg,omitempty"` //nolint:lll
-	HashOnURICapture       *string      `json:"hash_on_uri_capture,omitempty" yaml:"hash_on_uri_capture,omitempty"`
-	HashFallbackURICapture *string      `json:"hash_fallback_uri_capture,omitempty" yaml:"hash_fallback_uri_capture,omitempty"` //nolint:lll
-	Tags                   []*string    `json:"tags,omitempty" yaml:"tags,omitempty"`
+	ID                 *string      `json:"id,omitempty" yaml:"id,omitempty"`
+	Name               *string      `json:"name,omitempty" yaml:"name,omitempty"`
+	HostHeader         *string      `json:"host_header,omitempty" yaml:"host_header,omitempty"`
+	ClientCertificate  *Certificate `json:"client_certificate,omitempty" yaml:"client_certificate,omitempty"`
+	Algorithm          *string      `json:"algorithm,omitempty" yaml:"algorithm,omitempty"`
+	Slots              *int         `json:"slots,omitempty" yaml:"slots,omitempty"`
+	Healthchecks       *Healthcheck `json:"healthchecks,omitempty" yaml:"healthchecks,omitempty"`
+	CreatedAt          *int64       `json:"created_at,omitempty" yaml:"created_at,omitempty"`
+	HashOn             *string      `json:"hash_on,omitempty" yaml:"hash_on,omitempty"`
+	HashFallback       *string      `json:"hash_fallback,omitempty" yaml:"hash_fallback,omitempty"`
+	HashOnHeader       *string      `json:"hash_on_header,omitempty" yaml:"hash_on_header,omitempty"`
+	HashFallbackHeader *string      `json:"hash_fallback_header,omitempty" yaml:"hash_fallback_header,omitempty"`
+	HashOnCookie       *string      `json:"hash_on_cookie,omitempty" yaml:"hash_on_cookie,omitempty"`
+	HashOnCookiePath   *string      `json:"hash_on_cookie_path,omitempty" yaml:"hash_on_cookie_path,omitempty"`
+	Tags               []*string    `json:"tags,omitempty" yaml:"tags,omitempty"`
 }
 
 // Target represents a Target in Kong.
@@ -254,22 +247,6 @@ type Target struct {
 
 // Configuration represents a config of a plugin in Kong.
 type Configuration map[string]interface{}
-
-// KongPluginOrdering contains before or after instructions for plugin execution order
-// +k8s:deepcopy-gen=true
-type PluginOrdering struct {
-	Before PluginOrderingPhase `json:"before,omitempty"`
-	After  PluginOrderingPhase `json:"after,omitempty"`
-}
-
-// TODO this explanation is bad, but the organization of the overall struct defies a good explanation at this level
-// beyond "they're the things used in PluginOrdering. This is a map from a phase name (which can only be "access"
-// in the initial 3.0 release) to a list of plugins that the plugin containing the PluginOrdering should run before
-// or after
-
-// PluginOrderingPhase indicates which plugins in a phase should affect the target plugin's order
-// +k8s:deepcopy-gen=true
-type PluginOrderingPhase map[string][]string
 
 // DeepCopyInto copies the receiver, writing into out. in must be non-nil.
 func (in Configuration) DeepCopyInto(out *Configuration) {
@@ -294,18 +271,17 @@ func (in Configuration) DeepCopy() Configuration {
 // Read https://getkong.org/docs/0.13.x/admin-api/#Plugin-object
 // +k8s:deepcopy-gen=true
 type Plugin struct {
-	CreatedAt *int            `json:"created_at,omitempty" yaml:"created_at,omitempty"`
-	ID        *string         `json:"id,omitempty" yaml:"id,omitempty"`
-	Name      *string         `json:"name,omitempty" yaml:"name,omitempty"`
-	Route     *Route          `json:"route,omitempty" yaml:"route,omitempty"`
-	Service   *Service        `json:"service,omitempty" yaml:"service,omitempty"`
-	Consumer  *Consumer       `json:"consumer,omitempty" yaml:"consumer,omitempty"`
-	Config    Configuration   `json:"config,omitempty" yaml:"config,omitempty"`
-	Enabled   *bool           `json:"enabled,omitempty" yaml:"enabled,omitempty"`
-	RunOn     *string         `json:"run_on,omitempty" yaml:"run_on,omitempty"`
-	Ordering  *PluginOrdering `json:"ordering,omitempty" yaml:"ordering,omitempty"`
-	Protocols []*string       `json:"protocols,omitempty" yaml:"protocols,omitempty"`
-	Tags      []*string       `json:"tags,omitempty" yaml:"tags,omitempty"`
+	CreatedAt *int          `json:"created_at,omitempty" yaml:"created_at,omitempty"`
+	ID        *string       `json:"id,omitempty" yaml:"id,omitempty"`
+	Name      *string       `json:"name,omitempty" yaml:"name,omitempty"`
+	Route     *Route        `json:"route,omitempty" yaml:"route,omitempty"`
+	Service   *Service      `json:"service,omitempty" yaml:"service,omitempty"`
+	Consumer  *Consumer     `json:"consumer,omitempty" yaml:"consumer,omitempty"`
+	Config    Configuration `json:"config,omitempty" yaml:"config,omitempty"`
+	Enabled   *bool         `json:"enabled,omitempty" yaml:"enabled,omitempty"`
+	RunOn     *string       `json:"run_on,omitempty" yaml:"run_on,omitempty"`
+	Protocols []*string     `json:"protocols,omitempty" yaml:"protocols,omitempty"`
+	Tags      []*string     `json:"tags,omitempty" yaml:"tags,omitempty"`
 }
 
 // Enterprise Entities
@@ -320,6 +296,14 @@ type Workspace struct {
 	Meta      map[string]interface{} `json:"meta,omitempty" yaml:"meta,omitempty"`
 }
 
+type FileResource struct {
+	CreatedAt *int    `json:"created_at,omitempty" yaml:"created_at,omitempty"`
+	ID        *string `json:"id,omitempty" yaml:"id,omitempty"`
+	Content   *string `json:"content,omitempty" yaml:"content,omitempty"`
+	Path      *string `json:"path,omitempty" yaml:"path,omitempty"`
+	Checksum  *string `json:"checksum,omitempty" yaml:"checksum,omitempty"`
+}
+
 // Group represents a Group in Kong.
 // +k8s:deepcopy-gen=true
 type Group struct {
@@ -327,6 +311,13 @@ type Group struct {
 	ID        *string `json:"id,omitempty" yaml:"id,omitempty"`
 	Name      *string `json:"name,omitempty" yaml:"name,omitempty"`
 	Comment   *string `json:"comment,omitempty" yaml:"comment,omitempty"`
+}
+
+// RBACRoleToGroupRequest represents a request to
+// +k8s:deepcopy-gen=true
+type RBACRoleToGroupRequest struct {
+	WorkspaceID *string `json:"workspace_id" yaml:"workspace_id"`
+	RBACRoleID  *string `json:"rbac_role_id" yaml:"rbac_role_id"`
 }
 
 // Admin represents an Admin in Kong.
@@ -384,7 +375,7 @@ type RBACEndpointPermission struct {
 	CreatedAt *int      `json:"created_at,omitempty" yaml:"created_at,omitempty"`
 	Workspace *string   `json:"workspace,omitempty" yaml:"workspace,omitempty"`
 	Endpoint  *string   `json:"endpoint,omitempty" yaml:"endpoint,omitempty"`
-	Actions   []*string `json:"actions,omitempty" yaml:"actions,omitempty"`
+	Actions   *string   `json:"actions,omitempty" yaml:"actions,omitempty"`
 	Negative  *bool     `json:"negative,omitempty" yaml:"negative,omitempty"`
 	Role      *RBACRole `json:"role,omitempty" yaml:"role,omitempty"`
 	Comment   *string   `json:"comment,omitempty" yaml:"comment,omitempty"`
@@ -401,15 +392,44 @@ func (e *RBACEndpointPermission) MarshalJSON() ([]byte, error) {
 		Role      *RBACRole `json:"role,omitempty" yaml:"role,omitempty"`
 		Comment   *string   `json:"comment,omitempty" yaml:"comment,omitempty"`
 	}
-	var actions []string
-	for _, action := range e.Actions {
-		actions = append(actions, *action)
-	}
+
 	return json.Marshal(&ep{
 		CreatedAt: e.CreatedAt,
 		Workspace: e.Workspace,
 		Endpoint:  e.Endpoint,
-		Actions:   String(strings.Join(actions, ",")),
+		Actions:   e.Actions,
+		Negative:  e.Negative,
+		Comment:   e.Comment,
+	})
+}
+
+type RBACEndpointPermissionResponse struct {
+	CreatedAt *int      `json:"created_at,omitempty" yaml:"created_at,omitempty"`
+	Workspace *string   `json:"workspace,omitempty" yaml:"workspace,omitempty"`
+	Endpoint  *string   `json:"endpoint,omitempty" yaml:"endpoint,omitempty"`
+	Actions   []*string `json:"actions,omitempty" yaml:"actions,omitempty"`
+	Negative  *bool     `json:"negative,omitempty" yaml:"negative,omitempty"`
+	Role      *RBACRole `json:"role,omitempty" yaml:"role,omitempty"`
+	Comment   *string   `json:"comment,omitempty" yaml:"comment,omitempty"`
+}
+
+// MarshalJSON marshals an endpoint permission into a suitable form for the Kong admin API
+func (e *RBACEndpointPermissionResponse) MarshalJSON() ([]byte, error) {
+	type ep struct {
+		CreatedAt *int      `json:"created_at,omitempty" yaml:"created_at,omitempty"`
+		Workspace *string   `json:"workspace,omitempty" yaml:"workspace,omitempty"`
+		Endpoint  *string   `json:"endpoint,omitempty" yaml:"endpoint,omitempty"`
+		Actions   []*string `json:"actions,omitempty" yaml:"actions,omitempty"`
+		Negative  *bool     `json:"negative,omitempty" yaml:"negative,omitempty"`
+		Role      *RBACRole `json:"role,omitempty" yaml:"role,omitempty"`
+		Comment   *string   `json:"comment,omitempty" yaml:"comment,omitempty"`
+	}
+
+	return json.Marshal(&ep{
+		CreatedAt: e.CreatedAt,
+		Workspace: e.Workspace,
+		Endpoint:  e.Endpoint,
+		Actions:   e.Actions,
 		Negative:  e.Negative,
 		Comment:   e.Comment,
 	})
@@ -435,20 +455,16 @@ func (e *RBACEntityPermission) MarshalJSON() ([]byte, error) {
 		CreatedAt  *int      `json:"created_at,omitempty" yaml:"created_at,omitempty"`
 		EntityID   *string   `json:"entity_id,omitempty" yaml:"entity_id,omitempty"`
 		EntityType *string   `json:"entity_type,omitempty" yaml:"entity_type,omitempty"`
-		Actions    *string   `json:"actions,omitempty" yaml:"actions,omitempty"`
+		Actions    []*string `json:"actions,omitempty" yaml:"actions,omitempty"`
 		Negative   *bool     `json:"negative,omitempty" yaml:"negative,omitempty"`
 		Role       *RBACRole `json:"role,omitempty" yaml:"role,omitempty"`
 		Comment    *string   `json:"comment,omitempty" yaml:"comment,omitempty"`
-	}
-	var actions []string
-	for _, action := range e.Actions {
-		actions = append(actions, *action)
 	}
 	return json.Marshal(&ep{
 		CreatedAt:  e.CreatedAt,
 		EntityID:   e.EntityID,
 		EntityType: e.EntityType,
-		Actions:    String(strings.Join(actions, ",")),
+		Actions:    e.Actions,
 		Negative:   e.Negative,
 		Comment:    e.Comment,
 	})

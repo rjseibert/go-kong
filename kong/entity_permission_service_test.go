@@ -13,7 +13,7 @@ func TestRBACEntityPermissionservice(T *testing.T) {
 	assert := assert.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(client)
 
 	// Create Workspace
@@ -22,14 +22,14 @@ func TestRBACEntityPermissionservice(T *testing.T) {
 	}
 
 	createdWorkspace, err := client.Workspaces.Create(defaultCtx, workspace)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(createdWorkspace)
 	// Create new workspace client
 	url, err := url.Parse(defaultBaseURL)
-	assert.NoError(err)
+	assert.Nil(err)
 	url.Path = path.Join(url.Path, *createdWorkspace.Name)
 	workspaceClient, err := NewTestClient(String(url.String()), nil)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(workspaceClient)
 	// Use new client in workspace context.
 	role := &RBACRole{
@@ -37,7 +37,7 @@ func TestRBACEntityPermissionservice(T *testing.T) {
 	}
 
 	createdRole, err := workspaceClient.RBACRoles.Create(defaultCtx, role)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(createdRole)
 
 	// Add Entity Permission to Role
@@ -53,28 +53,28 @@ func TestRBACEntityPermissionservice(T *testing.T) {
 	}
 
 	createdEntityPermission, err := workspaceClient.RBACEntityPermissions.Create(defaultCtx, ep)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(createdEntityPermission)
 
 	ep, err = workspaceClient.RBACEntityPermissions.Get(defaultCtx, createdRole.ID, createdEntityPermission.EntityID)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(ep)
 
 	negative := true
 	ep.Comment = String("new comment")
 	ep.Negative = &negative
 	ep, err = workspaceClient.RBACEntityPermissions.Update(defaultCtx, ep)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(ep)
 	assert.Equal("new comment", *ep.Comment)
 	assert.Equal(negative, *ep.Negative)
 
 	err = workspaceClient.RBACEntityPermissions.Delete(defaultCtx, createdRole.ID, createdEntityPermission.EntityID)
-	assert.NoError(err)
+	assert.Nil(err)
 	err = workspaceClient.RBACRoles.Delete(defaultCtx, createdRole.ID)
-	assert.NoError(err)
+	assert.Nil(err)
 	err = client.Workspaces.Delete(defaultCtx, createdWorkspace.ID)
-	assert.NoError(err)
+	assert.Nil(err)
 }
 
 func TestRBACEntityPermissionserviceList(T *testing.T) {
@@ -82,7 +82,7 @@ func TestRBACEntityPermissionserviceList(T *testing.T) {
 	assert := assert.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(client)
 
 	// Create a workspace
@@ -91,7 +91,7 @@ func TestRBACEntityPermissionserviceList(T *testing.T) {
 	}
 
 	createdWorkspace, err := client.Workspaces.Create(defaultCtx, workspace)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(createdWorkspace)
 
 	// Create a role
@@ -99,7 +99,7 @@ func TestRBACEntityPermissionserviceList(T *testing.T) {
 		Name: String("test-role-entity-perm"),
 	}
 	createdRole, err := client.RBACRoles.Create(defaultCtx, role)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(createdRole)
 
 	ep1 := &RBACEntityPermission{
@@ -110,16 +110,13 @@ func TestRBACEntityPermissionserviceList(T *testing.T) {
 		Actions: []*string{
 			String("create"),
 			String("read"),
-			String("update"),
-			String("delete"),
 		},
 	}
 	ep2 := &RBACEntityPermission{
 		Role: &RBACRole{
 			ID: createdRole.ID,
 		},
-		EntityID:   createdWorkspace.ID,
-		EntityType: String("workspaces"),
+		EntityID: createdWorkspace.ID,
 		Actions: []*string{
 			String("update"),
 			String("delete"),
@@ -127,22 +124,22 @@ func TestRBACEntityPermissionserviceList(T *testing.T) {
 	}
 
 	createdEntityPermissionA, err := client.RBACEntityPermissions.Create(defaultCtx, ep1)
-	assert.NoError(err)
+	assert.Nil(err)
 	createdEntityPermissionB, err := client.RBACEntityPermissions.Create(defaultCtx, ep2)
-	assert.NoError(err)
+	assert.Nil(err)
 
 	eps, err := client.RBACEntityPermissions.ListAllForRole(defaultCtx, createdRole.ID)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(eps)
 	// Counts default ep
 	assert.Equal(2, len(eps))
 
 	err = client.RBACEntityPermissions.Delete(defaultCtx, createdRole.ID, createdEntityPermissionA.EntityID)
-	assert.NoError(err)
+	assert.Nil(err)
 	err = client.RBACEntityPermissions.Delete(defaultCtx, createdRole.ID, createdEntityPermissionB.EntityID)
-	assert.NoError(err)
+	assert.Nil(err)
 	err = client.RBACRoles.Delete(defaultCtx, createdRole.ID)
-	assert.NoError(err)
+	assert.Nil(err)
 	err = client.Workspaces.Delete(defaultCtx, createdWorkspace.ID)
-	assert.NoError(err)
+	assert.Nil(err)
 }

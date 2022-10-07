@@ -1,13 +1,6 @@
 name: 'Integration Test : Community'
 
-on:
-  push:
-    branches:
-    - 'main'
-    - 'release/*'
-  pull_request:
-    branches:
-    - '*'
+on: [push, pull_request]
 
 jobs:
   test:
@@ -22,12 +15,11 @@ jobs:
         - '2.5.1'
         - '2.6.0'
         - '2.7.0'
-        - '2.8.0'
-        - '3.0.0'
     env:
       KONG_VERSION: ${{ matrix.kong_version }}
       KONG_ENTERPRISE_REPO_USERNAME: ${{ secrets.KONG_ENTERPRISE_REPO_USERNAME }}
       KONG_ENTERPRISE_REPO_PASSSWORD: ${{ secrets.KONG_ENTERPRISE_REPO_PASSSWORD }}
+      KONG_LICENSE_DATA: ${{ secrets.KONG_LICENSE_DATA }}
       KONG_ANONYMOUS_REPORTS: "off"
     runs-on: ubuntu-latest
     services:
@@ -39,12 +31,12 @@ jobs:
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
       - name: Setup go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v2
         with:
           go-version: '^1.16'
       - name: Checkout repository
-        uses: actions/checkout@v3
-      - uses: actions/cache@v3.0.8
+        uses: actions/checkout@v2.4.0
+      - uses: actions/cache@v2
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
@@ -60,7 +52,7 @@ jobs:
       - name: Run tests
         run: make test-coverage
       - name: Upload Code Coverage
-        uses: codecov/codecov-action@v3.1.1
+        uses: codecov/codecov-action@v2.1.0
         with:
           name: codecov-${{ matrix.kong_version }}
           flags: ${{ matrix.kong_version }},integration,community

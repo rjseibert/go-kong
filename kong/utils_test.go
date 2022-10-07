@@ -2,7 +2,6 @@ package kong
 
 import (
 	"net/http"
-	"net/http/httptest"
 	"reflect"
 	"testing"
 
@@ -59,65 +58,24 @@ func TestStringSlice(t *testing.T) {
 }
 
 func TestFixVersion(t *testing.T) {
-	tests := []struct {
-		version         string
-		expectedVersion string
-		isEnterprise    bool
-	}{
-		{
-			version:         "0.14.1",
-			expectedVersion: "0.14.1",
-		},
-		{
-			version:         "0.14.2rc",
-			expectedVersion: "0.14.2",
-		},
-		{
-			version:         "0.14.2rc1",
-			expectedVersion: "0.14.2",
-		},
-		{
-			version:         "0.14.2preview",
-			expectedVersion: "0.14.2",
-		},
-		{
-			version:         "0.14.2preview1",
-			expectedVersion: "0.14.2",
-		},
-		{
-			version:         "0.33-enterprise-edition",
-			expectedVersion: "0.33.0",
-			isEnterprise:    true,
-		},
-		{
-			version:         "0.33-1-enterprise-edition",
-			expectedVersion: "0.33.1",
-			isEnterprise:    true,
-		},
-		{
-			version:         "1.3.0.0-enterprise-edition-lite",
-			expectedVersion: "1.3.0.0",
-			isEnterprise:    true,
-		},
-		{
-			version:         "3.0.0.0",
-			expectedVersion: "3.0.0.0",
-			isEnterprise:    true,
-		},
-		{
-			version:         "3.0.0.0-enterprise-edition",
-			expectedVersion: "3.0.0.0",
-			isEnterprise:    true,
-		},
+	validVersions := map[string]string{
+		"0.14.1":                          "0.14.1",
+		"0.14.2rc":                        "0.14.2-rc",
+		"0.14.2rc1":                       "0.14.2-rc1",
+		"0.14.2preview":                   "0.14.2-preview",
+		"0.14.2preview1":                  "0.14.2-preview1",
+		"0.33-enterprise-edition":         "0.33.0+enterprise",
+		"0.33-1-enterprise-edition":       "0.33.1+enterprise",
+		"1.3.0.0-enterprise-edition-lite": "1.3.0+0-enterprise-lite",
+		"1.3.0.0-enterprise-lite":         "1.3.0+0-enterprise-lite",
 	}
-	for _, test := range tests {
-		v, err := ParseSemanticVersion(test.version)
+	for inputVersion, expectedVersion := range validVersions {
+		v, err := ParseSemanticVersion(inputVersion)
 		if err != nil {
-			t.Errorf("error converting %s: %v", test.version, err)
-		} else if v.String() != test.expectedVersion {
-			t.Errorf("converting %s, expecting %s, getting %s", test.version, test.expectedVersion, v.String())
+			t.Errorf("error converting %s: %v", inputVersion, err)
+		} else if v.String() != expectedVersion {
+			t.Errorf("converting %s, expecting %s, getting %s", inputVersion, expectedVersion, v.String())
 		}
-		assert.Equal(t, test.isEnterprise, v.IsKongGatewayEnterprise())
 	}
 
 	invalidVersions := []string{
@@ -208,7 +166,7 @@ func TestFillRoutesDefaults(T *testing.T) {
 	assert := assert.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(client)
 
 	tests := []struct {
@@ -274,7 +232,7 @@ func TestFillRoutesDefaults(T *testing.T) {
 		T.Run(tc.name, func(t *testing.T) {
 			r := tc.route
 			fullSchema, err := client.Schemas.Get(defaultCtx, "routes")
-			assert.NoError(err)
+			assert.Nil(err)
 			assert.NotNil(fullSchema)
 			if err = FillEntityDefaults(r, fullSchema); err != nil {
 				t.Errorf(err.Error())
@@ -295,7 +253,7 @@ func TestFillServiceDefaults(T *testing.T) {
 	assert := assert.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(client)
 
 	tests := []struct {
@@ -364,7 +322,7 @@ func TestFillServiceDefaults(T *testing.T) {
 		T.Run(tc.name, func(t *testing.T) {
 			s := tc.service
 			fullSchema, err := client.Schemas.Get(defaultCtx, "services")
-			assert.NoError(err)
+			assert.Nil(err)
 			assert.NotNil(fullSchema)
 			if err := FillEntityDefaults(s, fullSchema); err != nil {
 				t.Errorf(err.Error())
@@ -383,7 +341,7 @@ func TestFillTargetDefaults(T *testing.T) {
 	assert := assert.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(client)
 
 	tests := []struct {
@@ -413,7 +371,7 @@ func TestFillTargetDefaults(T *testing.T) {
 		T.Run(tc.name, func(t *testing.T) {
 			target := tc.target
 			fullSchema, err := client.Schemas.Get(defaultCtx, "targets")
-			assert.NoError(err)
+			assert.Nil(err)
 			assert.NotNil(fullSchema)
 			if err := FillEntityDefaults(target, fullSchema); err != nil {
 				t.Errorf(err.Error())
@@ -429,7 +387,7 @@ func TestFillUpstreamsDefaults(T *testing.T) {
 	assert := assert.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.NoError(err)
+	assert.Nil(err)
 	assert.NotNil(client)
 
 	tests := []struct {
@@ -553,7 +511,7 @@ func TestFillUpstreamsDefaults(T *testing.T) {
 		T.Run(tc.name, func(t *testing.T) {
 			u := tc.upstream
 			fullSchema, err := client.Schemas.Get(defaultCtx, "upstreams")
-			assert.NoError(err)
+			assert.Nil(err)
 			assert.NotNil(fullSchema)
 			if err = FillEntityDefaults(u, fullSchema); err != nil {
 				t.Errorf(err.Error())
@@ -565,27 +523,4 @@ func TestFillUpstreamsDefaults(T *testing.T) {
 			}
 		})
 	}
-}
-
-func TestHTTPClientWithHeaders(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(200)
-	}))
-	defer srv.Close()
-
-	assert.NotPanics(t,
-		func() {
-			client := HTTPClientWithHeaders(&http.Client{}, nil)
-			assert.NotNil(t, client)
-		},
-		"creating Kong's HTTP client using default/uninitialized http.Client shouldn't panic",
-	)
-
-	assert.NotPanics(t,
-		func() {
-			client := HTTPClientWithHeaders(nil, nil)
-			assert.NotNil(t, client)
-		},
-		"creating Kong's HTTP client using nil http.Client shouldn't panic",
-	)
 }

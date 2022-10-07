@@ -1,7 +1,7 @@
 package kong
 
 import (
-	"io"
+	"io/ioutil"
 	"net/http"
 	"strings"
 	"testing"
@@ -19,14 +19,14 @@ func TestHasError(T *testing.T) {
 			name: "code 200",
 			response: http.Response{
 				StatusCode: 200,
-				Body:       io.NopCloser(strings.NewReader("")),
+				Body:       ioutil.NopCloser(strings.NewReader("")),
 			},
 		},
 		{
 			name: "code 404",
 			response: http.Response{
 				StatusCode: 404,
-				Body:       io.NopCloser(strings.NewReader(`{"message": "potayto pohtato", "some": "other field"}`)),
+				Body:       ioutil.NopCloser(strings.NewReader(`{"message": "potayto pohtato", "some": "other field"}`)),
 			},
 			want: &APIError{
 				httpCode: 404,
@@ -37,7 +37,7 @@ func TestHasError(T *testing.T) {
 			name: "code 404, message field missing",
 			response: http.Response{
 				StatusCode: 404,
-				Body:       io.NopCloser(strings.NewReader(`{"nothing": "nothing"}`)),
+				Body:       ioutil.NopCloser(strings.NewReader(`{"nothing": "nothing"}`)),
 			},
 			want: &APIError{
 				httpCode: 404,
@@ -48,7 +48,7 @@ func TestHasError(T *testing.T) {
 			name: "code 404, empty body",
 			response: http.Response{
 				StatusCode: 404,
-				Body:       io.NopCloser(strings.NewReader(``)),
+				Body:       ioutil.NopCloser(strings.NewReader(``)),
 			},
 			want: &APIError{
 				httpCode: 404,
@@ -59,7 +59,7 @@ func TestHasError(T *testing.T) {
 			name: "code 404, unparseable json",
 			response: http.Response{
 				StatusCode: 404,
-				Body:       io.NopCloser(strings.NewReader(`This is not json`)),
+				Body:       ioutil.NopCloser(strings.NewReader(`This is not json`)),
 			},
 			want: &APIError{
 				httpCode: 404,
