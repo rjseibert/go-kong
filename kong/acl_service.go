@@ -3,6 +3,7 @@ package kong
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 )
 
 // AbstractACLService handles consumer ACL groups in Kong.
@@ -10,7 +11,7 @@ type AbstractACLService interface {
 	// Create adds a consumer to an ACL group in Kong
 	Create(ctx context.Context, consumerUsernameOrID *string, aclGroup *ACLGroup) (*ACLGroup, error)
 	// Get fetches an ACL group for a consumer in Kong.
-	Get(ctx context.Context, consumerUsernameOrID *string, groupOrID *string) (*ACLGroup, error)
+	Get(ctx context.Context, consumerUsernameOrID, groupOrID *string) (*ACLGroup, error)
 	// Update updates an ACL group for a consumer in Kong
 	Update(ctx context.Context, consumerUsernameOrID *string, aclGroup *ACLGroup) (*ACLGroup, error)
 	// Delete deletes an ACL group association for a consumer in Kong
@@ -51,7 +52,7 @@ func (s *ACLService) Create(ctx context.Context,
 
 // Get fetches an ACL group for a consumer in Kong.
 func (s *ACLService) Get(ctx context.Context,
-	consumerUsernameOrID *string, groupOrID *string) (*ACLGroup, error) {
+	consumerUsernameOrID, groupOrID *string) (*ACLGroup, error) {
 
 	cred, err := s.client.credentials.Get(ctx, "acl",
 		consumerUsernameOrID, groupOrID)
@@ -92,6 +93,21 @@ func (s *ACLService) Delete(ctx context.Context,
 	consumerUsernameOrID, groupOrID *string) error {
 	return s.client.credentials.Delete(ctx, "acl",
 		consumerUsernameOrID, groupOrID)
+}
+
+func (s *ACLService) DeleteById(ctx context.Context, aclGroupId *string) error {
+	if isEmptyString(aclGroupId) {
+		return fmt.Errorf("aclGroupId cannot be nil for Delete operation")
+	}
+
+	endpoint := fmt.Sprintf("/acls/%v", *aclGroupId)
+	req, err := s.client.NewRequest("DELETE", endpoint, nil, nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.client.Do(ctx, req, nil)
+	return err
 }
 
 // List fetches a list of all ACL group and consumer associations in Kong.
