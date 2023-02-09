@@ -9,6 +9,8 @@ import (
 )
 
 func TestOauth2CredentialCreate(T *testing.T) {
+	RunWhenDBMode(T, "postgres")
+
 	assert := assert.New(T)
 	require := require.New(T)
 
@@ -51,6 +53,8 @@ func TestOauth2CredentialCreate(T *testing.T) {
 }
 
 func TestOauth2CredentialCreateWithID(T *testing.T) {
+	RunWhenDBMode(T, "postgres")
+
 	assert := assert.New(T)
 	require := require.New(T)
 
@@ -88,7 +92,48 @@ func TestOauth2CredentialCreateWithID(T *testing.T) {
 	assert.NoError(client.Consumers.Delete(defaultCtx, consumer.ID))
 }
 
+func TestOauth2CredentialCreatePublicClientType(T *testing.T) {
+	RunWhenDBMode(T, "postgres")
+
+	assert := assert.New(T)
+	require := require.New(T)
+
+	client, err := NewTestClient(nil, nil)
+	require.NoError(err)
+	require.NotNil(client)
+
+	uuid := uuid.NewString()
+	oauth2Cred := &Oauth2Credential{
+		ID:           String(uuid),
+		Name:         String("name"),
+		ClientID:     String("public-client"),
+		ClientType:   String("public"),
+		RedirectURIs: StringSlice("http://foo.com", "http://bar.com"),
+	}
+
+	// consumer for the oauth2 cred
+	consumer := &Consumer{
+		Username: String("foo"),
+	}
+
+	consumer, err = client.Consumers.Create(defaultCtx, consumer)
+	require.NoError(err)
+	require.NotNil(consumer)
+
+	createdOauth2Credential, err := client.Oauth2Credentials.Create(
+		defaultCtx, consumer.ID, oauth2Cred)
+	require.NoError(err)
+	require.NotNil(createdOauth2Credential)
+
+	assert.Equal(uuid, *createdOauth2Credential.ID)
+	assert.Equal("public", *createdOauth2Credential.ClientType)
+
+	assert.NoError(client.Consumers.Delete(defaultCtx, consumer.ID))
+}
+
 func TestOauth2CredentialGet(T *testing.T) {
+	RunWhenDBMode(T, "postgres")
+
 	assert := assert.New(T)
 	require := require.New(T)
 
@@ -189,6 +234,8 @@ func TestOauth2CredentialUpdate(T *testing.T) {
 }
 
 func TestOauth2CredentialDelete(T *testing.T) {
+	RunWhenDBMode(T, "postgres")
+
 	assert := assert.New(T)
 	require := require.New(T)
 
@@ -230,6 +277,8 @@ func TestOauth2CredentialDelete(T *testing.T) {
 }
 
 func TestOauth2CredentialListMethods(T *testing.T) {
+	RunWhenDBMode(T, "postgres")
+
 	assert := assert.New(T)
 	require := require.New(T)
 

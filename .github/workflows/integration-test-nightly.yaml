@@ -1,4 +1,4 @@
-name: 'Integration Test : Community'
+name: 'Integration Test : Community Nightly'
 
 on:
   push:
@@ -13,31 +13,21 @@ jobs:
   test:
     strategy:
       matrix:
-        kong_version:
-        - '2.1.4'
-        - '2.2.2'
-        - '2.3.3'
-        - '2.4.0'
-        - '2.5.1'
-        - '2.6.0'
-        - '2.7.0'
-        - '2.8.0'
-        - '3.0.1'
-        - '3.1.0'
         dbmode:
           - 'dbless'
           - 'postgres'
     env:
-      KONG_IMAGE_TAG: ${{ matrix.kong_version }}
+      KONG_IMAGE_REPO: "kong/kong"
+      KONG_IMAGE_TAG: "master-alpine"
       KONG_ANONYMOUS_REPORTS: "off"
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
       - name: Setup go
         uses: actions/setup-go@v3
         with:
-          go-version-file: go.mod
+          go-version: '^1.19'
+      - name: Checkout repository
+        uses: actions/checkout@v3
       - uses: actions/cache@v3.2.4
         with:
           path: ~/go/pkg/mod
@@ -52,16 +42,7 @@ jobs:
         uses: codecov/codecov-action@v3.1.1
         continue-on-error: true
         with:
-          name: codecov-${{ matrix.kong_version }}
-          flags: ${{ matrix.kong_version }},integration,community
-          token: ${{ secrets.CODECOV_TOKEN }}
+          name: codecov-nightly
+          flags: nightly,integration,community
           fail_ci_if_error: true
 
-  test-passed:
-    runs-on: ubuntu-latest
-    needs: test
-    if: always()
-    steps:
-    - name: Set workflow outcome
-      if: needs.test.result == 'failure' || needs.test.result == 'cancelled'
-      run: ${{ false }}

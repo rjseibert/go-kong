@@ -217,9 +217,27 @@ func fillConfigRecord(schema gjson.Result, config Configuration) Configuration {
 		}
 
 		// check if key is already set in the config
-		if _, ok := config[fname]; ok {
-			// yes, don't set it
-			return true
+		if v, ok := config[fname]; ok {
+			// the field is set. If it's not a map, then
+			// the field is fully set. If it's a map, we
+			// need to make sure that all fields are properly
+			// filled.
+			//
+			// some fields are defined as arbitrary maps,
+			// containing a 'keys' and 'values' subfields.
+			// in this case, the map is already fully set.
+			switch v.(type) {
+			case map[string]interface{}:
+				keys := value.Get(fname + ".keys")
+				values := value.Get(fname + ".values")
+				if keys.Exists() && values.Exists() {
+					// an arbitrary map, field is already set.
+					return true
+				}
+			default:
+				// not a map, field is already set.
+				return true
+			}
 		}
 		ftype := value.Get(fname + ".type")
 		if ftype.String() == "record" {
@@ -248,7 +266,9 @@ func fillConfigRecord(schema gjson.Result, config Configuration) Configuration {
 // and flattens it, turning it into a map that can be more easily unmarshalled
 // into proper entity objects.
 //
-// Sample input:
+// This supports both Lua and JSON schemas.
+//
+// Sample Lua schema input:
 //
 //	{
 //		"fields": [
@@ -274,6 +294,32 @@ func fillConfigRecord(schema gjson.Result, config Configuration) Configuration {
 //	  ...
 //	}
 //
+// Sample JSON schema input:
+//
+//	{
+//		"properties": [
+//	        {
+//	            "algorithm": {
+//	                "default": "round-robin",
+//	                "enum": ["consistent-hashing", "least-connections", "round-robin"],
+//	                "type": "string"
+//	            }
+//	        }, {
+//	            "hash_on": {
+//	                "default": "none",
+//	                "enum": ["none", "consumer", "ip", "header", "cookie"],
+//	                "type": "string"
+//	            }
+//	        }, {
+//	            "hash_fallback": {
+//	                "default": "none",
+//	                "enum": ["none", "consumer", "ip", "header", "cookie"],
+//	                "type": "string"
+//	            }
+//	        },
+//	  ...
+//	}
+//
 // Sample output:
 //
 //	{
@@ -283,7 +329,49 @@ func fillConfigRecord(schema gjson.Result, config Configuration) Configuration {
 //	 ...
 //	}
 func flattenDefaultsSchema(schema gjson.Result) Schema {
-	value := schema.Get("fields")
+	fields := schema.Get("fields")
+	if fields.Exists() {
+		return flattenLuaSchema(fields)
+	}
+	properties := schema.Get("properties")
+	if properties.Exists() {
+		return flattenJSONSchema(properties)
+	}
+	return Schema{}
+}
+
+func flattenJSONSchema(value gjson.Result) Schema {
+	results := Schema{}
+
+	value.ForEach(func(key, value gjson.Result) bool {
+		name := key.String()
+
+		ftype := value.Get("type")
+		// when type==object and additionalProperties==false, the object
+		// represents either a foreign relationship or a map entry.
+		// In both cases, defaults don't need to be injected.
+		additionalProperties := value.Get("additionalProperties")
+		if ftype.String() == "object" &&
+			(!additionalProperties.Exists() ||
+				(additionalProperties.Exists() &&
+					additionalProperties.Bool())) {
+			newSubConfig := flattenDefaultsSchema(value)
+			results[name] = newSubConfig
+			return true
+		}
+		value = value.Get("default")
+		if value.Exists() {
+			results[name] = value.Value()
+		} else {
+			results[name] = nil
+		}
+		return true
+	})
+
+	return results
+}
+
+func flattenLuaSchema(value gjson.Result) Schema {
 	results := Schema{}
 
 	value.ForEach(func(key, value gjson.Result) bool {
@@ -358,20 +446,22 @@ func FillEntityDefaults(entity interface{}, schema Schema) error {
 		tmpEntity = &Route{}
 	case *Upstream:
 		tmpEntity = &Upstream{}
+	case *ConsumerGroupPlugin:
+		tmpEntity = &ConsumerGroupPlugin{}
 	default:
 		return fmt.Errorf("unsupported entity: '%T'", entity)
 	}
 	defaults, err := getDefaultsObj(schema)
 	if err != nil {
-		return fmt.Errorf("parse schema for defaults: %v", err)
+		return fmt.Errorf("parse schema for defaults: %w", err)
 	}
 	if err := json.Unmarshal(defaults, &tmpEntity); err != nil {
-		return fmt.Errorf("unmarshal entity with defaults: %v", err)
+		return fmt.Errorf("unmarshal entity with defaults: %w", err)
 	}
 	if err := mergo.Merge(
 		entity, tmpEntity, mergo.WithTransformers(zeroValueTransformer{}),
 	); err != nil {
-		return fmt.Errorf("merge entity with its defaults: %v", err)
+		return fmt.Errorf("merge entity with its defaults: %w", err)
 	}
 	return nil
 }

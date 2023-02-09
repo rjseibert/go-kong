@@ -41,6 +41,8 @@ func TestPluginsServiceValidation(T *testing.T) {
 }
 
 func TestPluginsService(T *testing.T) {
+	RunWhenDBMode(T, "postgres")
+
 	assert := assert.New(T)
 	require := require.New(T)
 
@@ -129,15 +131,62 @@ func TestPluginsService(T *testing.T) {
 	assert.NotNil(createdPlugin.ID)
 
 	assert.NoError(client.Services.Delete(defaultCtx, createdService.ID))
+
+	// Create Plugin for route
+	route := &Route{
+		Name:  String("route_plugin"),
+		Paths: []*string{String("/route_plugin")},
+	}
+	// Clean Data
+	err = client.Routes.Delete(defaultCtx, route.Name)
+	assert.NoError(err)
+	// Test to create plugin from route endpoint
+	createdRoute, err := client.Routes.Create(defaultCtx, route)
+	assert.NoError(err)
+
+	id = uuid.NewString()
+	pluginForRoute := &Plugin{
+		Name: String("key-auth"),
+		ID:   String(id),
+		Config: Configuration{
+			"anonymous": "true",
+		},
+	}
+
+	createdPlugin, err = client.Plugins.CreateForRoute(defaultCtx, createdRoute.Name, pluginForRoute)
+	assert.NoError(err)
+	assert.NotNil(createdPlugin)
+	assert.Equal(id, *createdPlugin.ID)
+	assert.Equal("true", createdPlugin.Config["anonymous"])
+
+	createdPlugin.Config["anonymous"] = "false"
+	updatedPlugin, err = client.Plugins.UpdateForRoute(defaultCtx, createdRoute.Name, createdPlugin)
+	assert.NoError(err)
+	assert.NotNil(createdPlugin)
+	assert.Equal(id, *createdPlugin.ID)
+	assert.Equal("false", updatedPlugin.Config["anonymous"])
+
+	err = client.Plugins.DeleteForRoute(defaultCtx, createdRoute.Name, updatedPlugin.ID)
+	assert.NoError(err)
+
+	// Create plugin without ID
+	_, err = client.Plugins.CreateForRoute(defaultCtx, createdRoute.Name, &Plugin{Name: String("key-auth")})
+	assert.NoError(err)
+	assert.NotNil(createdPlugin)
+	assert.NotNil(createdPlugin.ID)
+
+	assert.NoError(client.Routes.Delete(defaultCtx, createdRoute.ID))
 }
 
 func TestPluginWithTags(T *testing.T) {
+	RunWhenDBMode(T, "postgres")
 	RunWhenKong(T, ">=1.1.0")
-	assert := assert.New(T)
+
+	require := require.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.NoError(err)
-	assert.NotNil(client)
+	require.NoError(err)
+	require.NotNil(client)
 
 	plugin := &Plugin{
 		Name: String("key-auth"),
@@ -145,12 +194,12 @@ func TestPluginWithTags(T *testing.T) {
 	}
 
 	createdPlugin, err := client.Plugins.Create(defaultCtx, plugin)
-	assert.NoError(err)
-	assert.NotNil(createdPlugin)
-	assert.Equal(StringSlice("tag1", "tag2"), createdPlugin.Tags)
+	require.NoError(err)
+	require.NotNil(createdPlugin)
+	require.Equal(StringSlice("tag1", "tag2"), createdPlugin.Tags)
 
 	err = client.Plugins.Delete(defaultCtx, createdPlugin.ID)
-	assert.NoError(err)
+	require.NoError(err)
 }
 
 func TestPluginWithOrdering(T *testing.T) {
@@ -230,6 +279,8 @@ func TestUnknownPlugin(T *testing.T) {
 }
 
 func TestPluginListEndpoint(T *testing.T) {
+	RunWhenDBMode(T, "postgres")
+
 	assert := assert.New(T)
 
 	client, err := NewTestClient(nil, nil)
@@ -309,6 +360,8 @@ func TestPluginListEndpoint(T *testing.T) {
 }
 
 func TestPluginListAllForEntityEndpoint(T *testing.T) {
+	RunWhenDBMode(T, "postgres")
+
 	assert := assert.New(T)
 	require := require.New(T)
 
@@ -454,6 +507,7 @@ func TestFillPluginDefaults(T *testing.T) {
 	// TODO https://github.com/Kong/go-kong/issues/214 this should only skip Enterprise 3.x (with a separate test)
 	// not all Enterprise versions.
 	SkipWhenEnterprise(T)
+	RunWhenKong(T, ">=2.3.0")
 	assert := assert.New(T)
 
 	client, err := NewTestClient(nil, nil)
@@ -516,6 +570,13 @@ func TestFillPluginDefaults(T *testing.T) {
 						"headers":     "x-new-header:value",
 						"querystring": []interface{}{},
 					},
+					"append": map[string]interface{}{
+						"headers": "x-append-header:value",
+					},
+					"remove": map[string]interface{}{
+						"body":        []interface{}{},
+						"querystring": "?query=val",
+					},
 				},
 				Enabled:   Bool(false),
 				Protocols: []*string{String("grpc"), String("grpcs")},
@@ -531,13 +592,13 @@ func TestFillPluginDefaults(T *testing.T) {
 					},
 					"append": map[string]interface{}{
 						"body":        []interface{}{},
-						"headers":     []interface{}{},
+						"headers":     "x-append-header:value",
 						"querystring": []interface{}{},
 					},
 					"remove": map[string]interface{}{
 						"body":        []interface{}{},
 						"headers":     []interface{}{},
-						"querystring": []interface{}{},
+						"querystring": "?query=val",
 					},
 					"rename": map[string]interface{}{
 						"body":        []interface{}{},
@@ -553,6 +614,38 @@ func TestFillPluginDefaults(T *testing.T) {
 				},
 				Protocols: []*string{String("grpc"), String("grpcs")},
 				Enabled:   Bool(false),
+			},
+		},
+		{
+			name: "nested config with arbitrary map field",
+			plugin: &Plugin{
+				Name: String("http-log"),
+				Config: Configuration{
+					"custom_fields_by_lua": map[string]interface{}{
+						"foo": "bar",
+					},
+				},
+				Enabled:   Bool(false),
+				Protocols: []*string{String("grpc"), String("grpcs")},
+			},
+			expected: &Plugin{
+				Name: String("http-log"),
+				Config: Configuration{
+					"content_type": string("application/json"),
+					"custom_fields_by_lua": map[string]interface{}{
+						"foo": "bar",
+					},
+					"flush_timeout": float64(2),
+					"headers":       nil,
+					"http_endpoint": nil,
+					"keepalive":     float64(60000),
+					"method":        string("POST"),
+					"queue_size":    float64(1),
+					"retry_count":   float64(10),
+					"timeout":       float64(10000),
+				},
+				Enabled:   Bool(false),
+				Protocols: []*string{String("grpc"), String("grpcs")},
 			},
 		},
 	}

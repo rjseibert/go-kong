@@ -8,7 +8,7 @@ test-enterprise:
 
 .PHONY: lint
 lint:
-	golangci-lint run ./...
+	golangci-lint run -v ./...
 
 .PHONY: verify-codegen
 verify-codegen:
@@ -18,9 +18,17 @@ verify-codegen:
 update-codegen:
 	./hack/update-deepcopy-gen.sh
 
-.PHONY: setup-kong
-setup-kong:
-	bash .ci/setup_kong.sh
+.PHONY: setup-kong-dbless
+setup-kong-dbless:
+	bash .ci/setup_kong.sh --dbless
+
+.PHONY: setup-kong-postgres
+setup-kong-postgres:
+	bash .ci/setup_kong.sh --postgres
+
+.PHONY: setup-kong-ee
+setup-kong-ee:
+	bash .ci/setup_kong_ee.sh
 
 .PHONY: test-coverage-enterprise
 test-coverage-enterprise:

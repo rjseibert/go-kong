@@ -1,5 +1,12 @@
 # Table of Contents
 
+- [v0.37.0](#v0370)
+- [v0.36.0](#v0360)
+- [v0.35.0](#v0350)
+- [v0.34.1](#v0341)
+- [v0.34.0](#v0340)
+- [v0.33.0](#v0330)
+- [v0.32.0](#v0320)
 - [v0.31.1](#v0311)
 - [v0.31.0](#v0310)
 - [v0.30.0](#v0300)
@@ -38,6 +45,75 @@
 - [0.3.0](#030)
 - [0.2.0](#020)
 - [0.1.0](#010)
+
+## [v0.37.0]
+
+> Release date: 2023/02/03
+
+- **Breaking change:** the `ConfigService` is now directly embedded in the
+  `kong.Client`. Configurations are collections of entities, not entities
+  themselves, so they do not fit with other go-kong services.
+- **Breaking change:** `ReloadDeclarativeRawConfig()` (formerly part of
+  `ConfigService`, now part of `kong.Client`) now has the response signature
+  `([]byte, error)` instead of `error`. The byte slice is the config response
+  body. The error is unchanged.
+- **Breaking change:** `ReloadDeclarativeRawConfig()` now requires a
+  `flattenErrors` boolean argument. When `true`, requests will include
+  `flatten_errors=1` in the query string, to activate the functionality added
+  in https://github.com/Kong/kong/pull/10161.
+  [#273](https://github.com/Kong/go-kong/pull/273)
+
+## [v0.36.0]
+
+> Release date: 2023/01/24
+
+- Added `NewAPIErrorWithRaw()` to return a go-kong APIError along with the original raw error body.
+  [#237](https://github.com/Kong/go-kong/pull/237)
+  [#267](https://github.com/Kong/go-kong/pull/267)
+
+## [v0.35.0]
+
+> Release date: 2023/01/19
+
+- Add consumer_groups tags support
+  [#265](https://github.com/Kong/go-kong/pull/265)
+- Add IsForbiddenErr error checking for 403s
+  [#264](https://github.com/Kong/go-kong/pull/264)
+
+## [v0.34.1]
+
+> Release date: 2022/12/22
+
+- Fix ingestion of entity defaults with arbitray map values
+  [#258](https://github.com/Kong/go-kong/pull/258)
+
+## [v0.34.0]
+
+> Release date: 2022/12/19
+
+- Add support to consumer_groups
+  [#221](https://github.com/Kong/go-kong/pull/221)
+- Add Keys and Key-sets as core entities
+  [#238](https://github.com/Kong/go-kong/pull/238)
+- Add `BaseRootURL()` to Client
+  [#255](https://github.com/Kong/go-kong/pull/255)
+- Add possibility to client to send declarative configs via `ReloadDeclarativeRawConfig()`
+  [#252](https://github.com/Kong/go-kong/pull/252)
+- Add OAuth2 client_type field
+  [#235](https://github.com/Kong/go-kong/pull/235)
+- Fix ingestion of entity defaults with map values
+  [#244](https://github.com/Kong/go-kong/pull/244)
+- Add support to filling entity defaults using JSON schemas.
+  [#231](https://github.com/Kong/go-kong/pull/231)
+
+## [v0.33.0]
+
+> Release date: 2022/10/05
+
+- Add support to Kong Vaults
+  [#224](https://github.com/Kong/go-kong/pull/224)
+- Add plugin to a route
+  [#217](https://github.com/Kong/go-kong/pull/217)
 
 ## [v0.32.0]
 
@@ -608,6 +684,13 @@ authentication credentials in Kong.
   releases of Kong since every release of Kong is introducing breaking changes
   to the Admin API.
 
+[v0.37.0]: https://github.com/Kong/go-kong/compare/v0.36.0...v0.37.0
+[v0.36.0]: https://github.com/Kong/go-kong/compare/v0.35.0...v0.36.0
+[v0.35.0]: https://github.com/Kong/go-kong/compare/v0.34.1...v0.35.0
+[v0.34.1]: https://github.com/Kong/go-kong/compare/v0.34.0...v0.34.1
+[v0.34.0]: https://github.com/Kong/go-kong/compare/v0.33.0...v0.34.0
+[v0.33.0]: https://github.com/Kong/go-kong/compare/v0.32.0...v0.33.0
+[v0.32.0]: https://github.com/Kong/go-kong/compare/v0.31.1...v0.32.0
 [v0.31.1]: https://github.com/Kong/go-kong/compare/v0.31.0...v0.31.1
 [v0.31.0]: https://github.com/Kong/go-kong/compare/v0.30.0...v0.31.0
 [v0.30.0]: https://github.com/Kong/go-kong/compare/v0.29.0...v0.30.0

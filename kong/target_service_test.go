@@ -2,6 +2,7 @@ package kong
 
 import (
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -9,6 +10,8 @@ import (
 )
 
 func TestTargetsUpstream(T *testing.T) {
+	RunWhenDBMode(T, "postgres")
+
 	assert := assert.New(T)
 	require := require.New(T)
 
@@ -63,6 +66,8 @@ func TestTargetsUpstream(T *testing.T) {
 }
 
 func TestTargetsUpdate(T *testing.T) {
+	RunWhenDBMode(T, "postgres")
+
 	assert := assert.New(T)
 	require := require.New(T)
 
@@ -107,25 +112,27 @@ func TestTargetsUpdate(T *testing.T) {
 }
 
 func TestTargetWithTags(T *testing.T) {
+	RunWhenDBMode(T, "postgres")
 	RunWhenKong(T, ">=1.1.0")
 	assert := assert.New(T)
+	require := require.New(T)
 
 	client, err := NewTestClient(nil, nil)
-	assert.NoError(err)
-	assert.NotNil(client)
+	require.NoError(err)
+	require.NotNil(client)
 
 	fixtureUpstream, err := client.Upstreams.Create(defaultCtx, &Upstream{
 		Name: String("vhost.com"),
 	})
-	assert.NoError(err)
+	require.NoError(err)
 
 	createdTarget, err := client.Targets.Create(defaultCtx,
 		fixtureUpstream.ID, &Target{
 			Target: String("10.0.0.1:80"),
 			Tags:   StringSlice("tag1", "tag2"),
 		})
-	assert.NoError(err)
-	assert.NotNil(createdTarget)
+	require.NoError(err)
+	require.NotNil(createdTarget)
 	assert.Equal(StringSlice("tag1", "tag2"), createdTarget.Tags)
 
 	err = client.Upstreams.Delete(defaultCtx, fixtureUpstream.ID)
@@ -133,6 +140,8 @@ func TestTargetWithTags(T *testing.T) {
 }
 
 func TestTargetListEndpoint(T *testing.T) {
+	RunWhenDBMode(T, "postgres")
+
 	assert := assert.New(T)
 	require := require.New(T)
 
@@ -228,6 +237,8 @@ func compareTargets(expected, actual []*Target) bool {
 }
 
 func TestTargetMarkHealthy(T *testing.T) {
+	RunWhenDBMode(T, "postgres")
+
 	// TODO https://github.com/Kong/go-kong/issues/213 this does not yet work on 3.x
 	RunWhenKong(T, "<3.0.0")
 	assert := assert.New(T)
@@ -261,12 +272,21 @@ func TestTargetMarkHealthy(T *testing.T) {
 
 	assert.NotNil(client.Targets.MarkHealthy(defaultCtx, createdTarget.Upstream.ID, nil))
 	assert.NotNil(client.Targets.MarkHealthy(defaultCtx, nil, createdTarget))
-	assert.NoError(client.Targets.MarkHealthy(defaultCtx, createdTarget.Upstream.ID, createdTarget))
+	assert.Eventually(func() bool {
+		err := client.Targets.MarkHealthy(defaultCtx, createdTarget.Upstream.ID, createdTarget)
+		if err != nil {
+			T.Logf("failed marking target %s healthy", *createdTarget.ID)
+			return false
+		}
+		return true
+	}, 5*time.Second, 100*time.Millisecond)
 
 	assert.NoError(client.Upstreams.Delete(defaultCtx, createdUpstream.ID))
 }
 
 func TestTargetMarkUnhealthy(T *testing.T) {
+	RunWhenDBMode(T, "postgres")
+
 	// TODO https://github.com/Kong/go-kong/issues/213 this does not yet work on 3.x
 	RunWhenKong(T, "<3.0.0")
 	assert := assert.New(T)
@@ -300,7 +320,15 @@ func TestTargetMarkUnhealthy(T *testing.T) {
 
 	assert.NotNil(client.Targets.MarkUnhealthy(defaultCtx, createdTarget.Upstream.ID, nil))
 	assert.NotNil(client.Targets.MarkUnhealthy(defaultCtx, nil, createdTarget))
-	assert.NoError(client.Targets.MarkUnhealthy(defaultCtx, createdTarget.Upstream.ID, createdTarget))
+
+	assert.Eventually(func() bool {
+		err := client.Targets.MarkUnhealthy(defaultCtx, createdTarget.Upstream.ID, createdTarget)
+		if err != nil {
+			T.Logf("failed marking target %s healthy", *createdTarget.ID)
+			return false
+		}
+		return true
+	}, 5*time.Second, 100*time.Millisecond)
 
 	assert.NoError(client.Upstreams.Delete(defaultCtx, createdUpstream.ID))
 }
